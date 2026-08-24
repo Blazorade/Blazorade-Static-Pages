@@ -1,38 +1,41 @@
 @page "/config"
 
 <PageTitle>Configuration | Blazorade Static Pages</PageTitle>
-<StaticPage Title="@title">
-    
-    <h1>@title</h1>
+<StaticPage Title="@title"/>
 
-    <p class="lead">
-        Apps using Blazorade Static Pages are configured at build time with a
-        <code>blazorade.config.json</code> file in the application's project root.
-    </p>
+<StaticContent>
+    <main>
+        <h1>@title</h1>
 
-    <p>
-        The file is placed alongside the consuming Blazor WebAssembly project file. Static Pages
-        reads its own settings from the <code>staticPages</code> section; the runtime application
-        does not load this file.
-    </p>
+        <p class="lead">
+            Apps using Blazorade Static Pages are configured at build time with a
+            <code>blazorade.config.json</code> file in the application's project root.
+        </p>
 
-    <h2>Example</h2>
+        <p>
+            The file is placed alongside the consuming Blazor WebAssembly project file. Static Pages
+            reads its own settings from the <code>staticPages</code> section; the runtime application
+            does not load this file.
+        </p>
 
-    <pre class="bg-light border rounded p-3"><code>{
+        <h2>Example</h2>
+
+        <pre class="bg-light border rounded p-3"><code>{
   "staticPages": {
     "siteUrl": "https://www.example.com"
   }
 }</code></pre>
 
-    <p>
-        The <code>siteUrl</code> value is the public site origin used when generating canonical URLs
-        and other metadata for discovered routes. For example, a component with the route
-        <code>/products</code> produces the canonical URL
-        <code>https://www.example.com/products</code>.
-    </p>
+        <p>
+            The <code>siteUrl</code> value is the public site origin used when generating canonical URLs
+            and other metadata for discovered routes. For example, a component with the route
+            <code>/products</code> produces the canonical URL
+            <code>https://www.example.com/products</code>.
+        </p>
 
-    <p>
-        The shared configuration file can contain sections for other Blazorade libraries as well.
-        Each library reads only its own section, so settings remain isolated.
-    </p>
-</StaticPage>
+        <p>
+            The shared configuration file can contain sections for other Blazorade libraries as well.
+            Each library reads only its own section, so settings remain isolated.
+        </p>
+    </main>
+</StaticContent>

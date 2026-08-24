@@ -60,7 +60,8 @@ internal sealed class StaticSourcePageAnalyzer
                 var staticPage = staticPages[0];
                 var metadata = StaticPageMetadataValues.From(staticPage.Attributes, values, component, route);
                 var context = new RenderContext(values, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-                var content = RenderChildren(staticPage.Children, context, component, route, pageRoot: true);
+                var pageContent = document.Children.Where(node => node.IsElement("StaticPage") || node.IsElement("StaticContent"));
+                var content = RenderChildren(pageContent, context, component, route, pageRoot: true);
                 pages.Add(new AnalyzedStaticPage(route, CreateFilePath(route, component.Name), component.Name, content, metadata));
             }
         }

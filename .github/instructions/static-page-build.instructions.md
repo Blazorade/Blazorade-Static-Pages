@@ -22,6 +22,7 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 - Supported value propagation may include literal strings, numeric and Boolean literals, constant references, string concatenation, and interpolation whose operands are statically evaluable. The supported expression subset must remain explicit and deterministic.
 - Do not execute methods, property getters, lifecycle code, DI, or arbitrary C# to resolve a value. Report expressions that cannot be proven statically instead of guessing or silently omitting them.
 - Content directly inside `StaticPage` is included as static HTML.
+- A page-level `StaticContent` sibling of `StaticPage` is also included as static HTML. `StaticPage` supplies the page marker and metadata; it does not need to wrap all static markup.
 - `InteractiveContent` excludes its complete descendant subtree.
 - For reusable component tags, include only the component's `StaticContent` subtree.
 - Never blindly include all output from a reusable component.

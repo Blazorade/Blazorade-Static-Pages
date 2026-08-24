@@ -49,6 +49,7 @@ Rules:
 - `StaticPage` supplies metadata such as `Title`, `Description`, and `IncludeInSitemap`.
 - Future metadata may include canonical URL, change frequency, priority, author, date, keywords, and schema type.
 - Content directly inside `StaticPage` is static by default.
+- `StaticPage` does not have to wrap all page content. A page-level `StaticContent` component may be placed beside it, and that sibling content is included in static output.
 - `StaticPage` renders no wrapper element at runtime.
 - `StaticPage` is primarily a static-page signal and metadata contract.
 
@@ -73,7 +74,7 @@ Rules:
 
 ### `StaticContent`
 
-`StaticContent` is used inside reusable components to expose their static representation:
+`StaticContent` is used to expose a safe static representation. It may be used inside reusable components:
 
 ```razor
 <StaticContent>
@@ -100,8 +101,10 @@ Rules:
 
 Rules:
 
-- `StaticContent` is not required directly inside `StaticPage`.
+- `StaticContent` is not required directly inside `StaticPage`; page-level `StaticContent` may be a sibling of `StaticPage`.
+- Page-level `StaticContent` is included in the page's static output, alongside content directly inside `StaticPage`.
 - Reusable components use it to expose a safe static representation.
+- For reusable components, only their `StaticContent` subtree is included when the component is used by a page.
 - It is transparent at runtime and renders no wrapper element.
 - A reusable component with no static representation contributes no static content unless another explicit rule defines its behavior.
 - Static fragments should normally be complete, valid HTML fragments. Structurally incomplete fragments, such as standalone `<tr>` elements, are unsupported unless ancestor preservation is deliberately designed.
@@ -113,6 +116,7 @@ The intended extraction model is:
 ```text
 StaticPage
  ├── ordinary page markup       → include as static
+ ├── sibling StaticContent      → include as static
  ├── reusable component
  │    └── StaticContent          → include exposed fragment
  └── InteractiveContent          → exclude entire subtree
@@ -145,8 +149,8 @@ The initial renderer should:
 1. Discover routable components containing `StaticPage`.
 2. Read or capture their metadata.
 3. Render or analyse the component tree in a static extraction context.
-4. Treat direct page content as static.
-5. Traverse reusable components to find `StaticContent`.
+4. Treat direct page content and page-level `StaticContent` as static.
+5. Traverse reusable components to find their `StaticContent`.
 6. Skip `InteractiveContent` subtrees completely.
 7. Compose the collected fragments into an HTML page shell.
 8. Generate sitemap entries only for pages with `IncludeInSitemap="true"`.
