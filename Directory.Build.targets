@@ -25,11 +25,17 @@
   <Target Name="CopyBlazoradeStaticPagesToPublish" AfterTargets="Publish" Condition="Exists('$(BlazoradeStaticPagesGeneratedOutput)') and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator.Host' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages'">
     <ItemGroup>
       <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
+      <BlazoradeStaticPagesPublishedBootstrapper Include="$(PublishDir)wwwroot\_framework\blazor.webassembly.*.js" />
     </ItemGroup>
-    <MakeDir Directories="$(PublishDir)" />
     <Copy
       SourceFiles="@(BlazoradeStaticPagesGeneratedFile)"
       DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
       SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="@(BlazoradeStaticPagesPublishedBootstrapper)"
+      DestinationFiles="$(PublishDir)wwwroot\_framework\blazor.webassembly.js"
+      SkipUnchangedFiles="true"
+      Condition="@(BlazoradeStaticPagesPublishedBootstrapper->Count()) == '1'" />
   </Target>
+
 </Project>
