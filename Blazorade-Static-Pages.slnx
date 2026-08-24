@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/dev/">
+    <Project Path="dev/BlazoradeStaticPagesDev/BlazoradeStaticPagesDev.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Blazorade.StaticPages/Blazorade.StaticPages.csproj" />
+  </Folder>
+</Solution>
