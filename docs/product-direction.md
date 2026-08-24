@@ -1,12 +1,12 @@
-# Blazorade Scribe product direction
+# Blazorade Static Pages product direction
 
-Blazorade Scribe is an application-first static publishing layer for ordinary Blazor WebAssembly applications. It adds build-time static publishing without imposing a Markdown-first project structure or replacing standard Blazor development practices.
+Blazorade Static Pages is an application-first static page generation library for ordinary Blazor WebAssembly applications. It adds build-time generation of crawler-visible pages without imposing a Markdown-first project structure or replacing standard Blazor development practices.
 
-The application remains the source of truth. Developers use normal Blazor tooling, routing, layouts, navigation, and components. Scribe publishes explicitly declared static content and allows the running Blazor application to enhance that content with normal runtime interactivity.
+The application remains the source of truth. Developers use normal Blazor tooling, routing, layouts, navigation, and components. Static Pages generates pages from explicitly declared static content and allows the running Blazor application to enhance that content with normal runtime interactivity.
 
 ## Product objective
 
-Scribe generates crawler-visible static HTML from explicitly declared content in ordinary Blazor WebAssembly applications. The generated output is intended to support:
+Static Pages generates crawler-visible static HTML from explicitly declared content in ordinary Blazor WebAssembly applications. The generated output is intended to support:
 
 - Static HTML page generation.
 - Page metadata.
@@ -21,7 +21,7 @@ The static artifact is the baseline. Runtime enhancement must not be required fo
 
 ### `StaticPage`
 
-`StaticPage` identifies the start of a statically publishable page and carries page metadata.
+`StaticPage` identifies the start of a static page and carries page metadata.
 
 ```razor
 @page "/products"
@@ -50,7 +50,7 @@ Rules:
 - Future metadata may include canonical URL, change frequency, priority, author, date, keywords, and schema type.
 - Content directly inside `StaticPage` is static by default.
 - `StaticPage` renders no wrapper element at runtime.
-- `StaticPage` is primarily a publishing signal and metadata contract.
+- `StaticPage` is primarily a static-page signal and metadata contract.
 
 ### `InteractiveContent`
 
@@ -118,11 +118,11 @@ StaticPage
  └── InteractiveContent          → exclude entire subtree
 ```
 
-Scribe may inspect or execute components during analysis, but only content permitted by this contract becomes generated HTML. It must not blindly publish every output produced by every component.
+Static Pages may inspect or execute components during analysis, but only content permitted by this contract becomes generated HTML. It must not blindly include every output produced by every component.
 
 Components containing browser-only or runtime-only behavior must expose only a safe `StaticContent` representation, with interactive portions under `InteractiveContent`.
 
-## Build and publishing workflow
+## Build and generation workflow
 
 The conceptual workflow is:
 
@@ -131,14 +131,14 @@ dotnet build
     ↓
 Compiled Blazor assemblies
     ↓
-Scribe static-publishing target or command
+Static Pages generation target or command
     ↓
 Static page discovery and component-tree analysis
     ↓
 Generated HTML, sitemap, and route configuration
 ```
 
-The publisher should use a dedicated static-publishing host or renderer after compilation. It must operate on compiled components and a controlled render tree rather than parsing `.razor` source files as plain text.
+The generator should use a dedicated static-rendering host or renderer after compilation. It must operate on compiled components and a controlled render tree rather than parsing `.razor` source files as plain text.
 
 The initial renderer should:
 
@@ -166,9 +166,9 @@ Static processing must not require arbitrary application components to execute s
 - Unavailable external data.
 - Nondeterministic output.
 
-If static rendering fails, the publisher should report the page route, the involved component, the reason for failure, and guidance to move runtime-only behavior into `InteractiveContent`.
+If static rendering fails, the generator should report the page route, the involved component, the reason for failure, and guidance to move runtime-only behavior into `InteractiveContent`.
 
-Data access during static publishing is intentionally not defined yet. Future options include build-time service registration, static data providers, explicit build configuration, or a strict no-runtime-data rule.
+Data access during static generation is intentionally not defined yet. Future options include build-time service registration, static data providers, explicit build configuration, or a strict no-runtime-data rule.
 
 ## Initial implementation slice
 
@@ -191,7 +191,7 @@ The first slice does not attempt arbitrary Blazor prerendering, browser API supp
 
 The existing Blazorade Scraibe repository is useful reference material for reusable publishing infrastructure, including static HTML generation, sitemap generation, canonical URLs, page templates, route rewrites, HTML validation, and component enhancement concepts.
 
-The old Markdown publisher must not be copied blindly. Scribe's primary source model is compiled Blazor components and page metadata, not Markdown files. A possible long-term architecture is:
+The old Markdown publisher must not be copied blindly. Static Pages' primary source model is compiled Blazor components and page metadata, not Markdown files. A possible long-term architecture is:
 
 ```text
 Source adapter
