@@ -44,9 +44,14 @@ internal sealed class StaticSourcePageAnalyzer
 
             var document = Parse(component);
             var staticPages = document.Children.Where(node => node.IsElement("StaticPage")).ToArray();
-            if (staticPages.Length != 1)
+            if (staticPages.Length == 0)
             {
-                throw Error(component, routes[0], "A routable component must contain exactly one <StaticPage> component.");
+                continue;
+            }
+
+            if (staticPages.Length > 1)
+            {
+                throw Error(component, routes[0], "A static routable component must contain exactly one <StaticPage> component.");
             }
 
             foreach (var route in routes)
@@ -230,32 +235,34 @@ internal sealed class StaticSourcePageAnalyzer
     {
         var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         var codeBehind = Path.ChangeExtension(component.Path, ".razor.cs");
-        if (!File.Exists(codeBehind))
+        var sources = File.Exists(codeBehind)
+            ? new[] { component.Source, File.ReadAllText(codeBehind) }
+            : new[] { component.Source };
+
+        foreach (var source in sources)
         {
-            return values;
-        }
-
-        foreach (var line in File.ReadAllLines(codeBehind))
-        {
-            var trimmed = line.Trim();
-            var marker = trimmed.IndexOf("const ", StringComparison.Ordinal);
-            if (marker < 0)
+            foreach (var line in source.Split('\n'))
             {
-                continue;
-            }
+                var trimmed = line.Trim();
+                var marker = trimmed.IndexOf("const ", StringComparison.Ordinal);
+                if (marker < 0)
+                {
+                    continue;
+                }
 
-            var declaration = trimmed[(marker + 6)..];
-            var equals = declaration.IndexOf('=');
-            if (equals < 0)
-            {
-                continue;
-            }
+                var declaration = trimmed[(marker + 6)..];
+                var equals = declaration.IndexOf('=');
+                if (equals < 0)
+                {
+                    continue;
+                }
 
-            var name = declaration[..equals].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
-            var value = declaration[(equals + 1)..].Trim().TrimEnd(';').Trim();
-            if (value.Length >= 2 && value[0] == '"' && value[^1] == '"')
-            {
-                values[name] = value[1..^1].Replace("\\\"", "\"");
+                var name = declaration[..equals].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
+                var value = declaration[(equals + 1)..].Trim().TrimEnd(';').Trim();
+                if (value.Length >= 2 && value[0] == '"' && value[^1] == '"')
+                {
+                    values[name] = value[1..^1].Replace("\\\"", "\"");
+                }
             }
         }
 
