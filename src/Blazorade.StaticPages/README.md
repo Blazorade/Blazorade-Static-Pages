@@ -64,7 +64,7 @@ The generator does not execute application code. Values that depend on services,
 
 ## Version highlights
 
-### v1.0.0-preview.3
+### v1.0.0-preview.4
 
 - Routable components without `<StaticPage>` are ignored.
 - String constants declared in Razor `@code` blocks are supported for static content and metadata.
