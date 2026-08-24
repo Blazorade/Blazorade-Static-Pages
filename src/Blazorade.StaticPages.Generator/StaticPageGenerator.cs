@@ -44,7 +44,7 @@ public sealed class StaticPageGenerator
             var staticContent = await renderer.Dispatcher.InvokeAsync(async () =>
             {
                 var renderedPage = await renderer.RenderComponentAsync(page.ComponentType);
-                return renderedPage.ToHtmlString();
+                return ExtractStaticContent(renderedPage.ToHtmlString());
             });
             var metadata = metadataCapture.Current
                 ?? throw new InvalidOperationException($"The static page component '{page.PageName}' did not provide metadata.");
@@ -71,6 +71,69 @@ public sealed class StaticPageGenerator
         }
 
         return pages.Length;
+    }
+
+    private static string ExtractStaticContent(string renderedPage)
+    {
+        var markers = new[]
+        {
+            (Start: StaticGenerationMarkers.StaticPageStart, End: StaticGenerationMarkers.StaticPageEnd),
+            (Start: StaticGenerationMarkers.StaticContentStart, End: StaticGenerationMarkers.StaticContentEnd)
+        };
+        var content = new StringBuilder();
+        var position = 0;
+        var depth = 0;
+
+        while (position < renderedPage.Length)
+        {
+            var markerCandidates = markers
+                .SelectMany(marker => new[]
+                {
+                    (Index: renderedPage.IndexOf(marker.Start, position, StringComparison.Ordinal), IsStart: true, marker.Start, marker.End),
+                    (Index: renderedPage.IndexOf(marker.End, position, StringComparison.Ordinal), IsStart: false, marker.Start, marker.End)
+                })
+                .Where(marker => marker.Index >= 0)
+                .OrderBy(marker => marker.Index);
+
+            if (!markerCandidates.Any())
+            {
+                if (depth > 0)
+                {
+                    content.Append(renderedPage, position, renderedPage.Length - position);
+                }
+
+                break;
+            }
+
+            var nextMarker = markerCandidates.First();
+            if (depth > 0)
+            {
+                content.Append(renderedPage, position, nextMarker.Index - position);
+            }
+
+            if (nextMarker.IsStart)
+            {
+                depth++;
+                position = nextMarker.Index + nextMarker.Start.Length;
+            }
+            else
+            {
+                depth--;
+                if (depth < 0)
+                {
+                    throw new InvalidOperationException("Static-page content markers are not properly nested.");
+                }
+
+                position = nextMarker.Index + nextMarker.End.Length;
+            }
+        }
+
+        if (depth != 0)
+        {
+            throw new InvalidOperationException("Static-page content markers are not properly closed.");
+        }
+
+        return content.ToString();
     }
 
     private static IEnumerable<StaticPageInfo> DiscoverPages(Assembly assembly)

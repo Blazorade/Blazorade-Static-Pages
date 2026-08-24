@@ -13,6 +13,9 @@ public partial class StaticPage : BlazoradeComponentBase
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
+    private bool IsStaticGeneration =>
+        Services.GetService<StaticPageRenderContext>()?.IsStaticGeneration == true;
+
     /// <summary>
     /// Gets or sets the page title used for generated title metadata.
     /// </summary>
