@@ -5,9 +5,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="6.0.36" />
     <ProjectReference Include="..\Blazorade.StaticPages.Generator\Blazorade.StaticPages.Generator.csproj" />
   </ItemGroup>
 

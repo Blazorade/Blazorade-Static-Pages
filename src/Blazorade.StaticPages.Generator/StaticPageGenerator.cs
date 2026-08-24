@@ -1,14 +1,6 @@
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Blazorade.StaticPages;
-using Blazorade.StaticPages.Components;
-using Blazorade.StaticPages.StaticGeneration;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Blazorade.StaticPages.Generator;
 
@@ -22,36 +14,24 @@ public sealed class StaticPageGenerator
     /// </summary>
     /// <param name="options">The generation options.</param>
     /// <returns>The number of generated pages.</returns>
-    public async Task<int> GenerateAsync(StaticPageGeneratorOptions options)
+    public Task<int> GenerateAsync(StaticPageGeneratorOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var assembly = Assembly.LoadFrom(options.ApplicationAssemblyPath);
-        var pages = DiscoverPages(assembly).ToArray();
-        var metadataCapture = new StaticPageMetadataCapture();
-        var services = new ServiceCollection()
-            .AddSingleton(new StaticPageRenderContext(isStaticGeneration: true))
-            .AddSingleton<IStaticPageMetadataSink>(metadataCapture)
-            .BuildServiceProvider();
-        var renderer = new HtmlRenderer(services, NullLoggerFactory.Instance);
+        var analyzedPages = new StaticSourcePageAnalyzer(options.ProjectDirectory).Analyze();
+        var pages = analyzedPages
+            .Select(page => new StaticPageInfo(page.Route, page.FilePath, page.PageName, page.Content, page.Metadata))
+            .ToArray();
         var configuration = ReadConfiguration(options.ProjectDirectory);
 
         Directory.CreateDirectory(options.OutputDirectory);
 
         foreach (var page in pages)
         {
-            metadataCapture.Reset();
-            var staticContent = await renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var renderedPage = await renderer.RenderComponentAsync(page.ComponentType);
-                return ExtractStaticContent(renderedPage.ToHtmlString());
-            });
-            var metadata = metadataCapture.Current
-                ?? throw new InvalidOperationException($"The static page component '{page.PageName}' did not provide metadata.");
-            page.Metadata = metadata;
+            var metadata = page.Metadata;
             var outputPath = Path.Combine(options.OutputDirectory, page.FilePath);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-            File.WriteAllText(outputPath, CreateHtmlDocument(page, staticContent, metadata, configuration, options), Encoding.UTF8);
+            File.WriteAllText(outputPath, CreateHtmlDocument(page, page.Content, metadata, configuration, options), Encoding.UTF8);
         }
 
         File.WriteAllText(
@@ -70,91 +50,7 @@ public sealed class StaticPageGenerator
                 Encoding.UTF8);
         }
 
-        return pages.Length;
-    }
-
-    private static string ExtractStaticContent(string renderedPage)
-    {
-        var markers = new[]
-        {
-            (Start: StaticGenerationMarkers.StaticPageStart, End: StaticGenerationMarkers.StaticPageEnd),
-            (Start: StaticGenerationMarkers.StaticContentStart, End: StaticGenerationMarkers.StaticContentEnd)
-        };
-        var content = new StringBuilder();
-        var position = 0;
-        var depth = 0;
-
-        while (position < renderedPage.Length)
-        {
-            var markerCandidates = markers
-                .SelectMany(marker => new[]
-                {
-                    (Index: renderedPage.IndexOf(marker.Start, position, StringComparison.Ordinal), IsStart: true, marker.Start, marker.End),
-                    (Index: renderedPage.IndexOf(marker.End, position, StringComparison.Ordinal), IsStart: false, marker.Start, marker.End)
-                })
-                .Where(marker => marker.Index >= 0)
-                .OrderBy(marker => marker.Index);
-
-            if (!markerCandidates.Any())
-            {
-                if (depth > 0)
-                {
-                    content.Append(renderedPage, position, renderedPage.Length - position);
-                }
-
-                break;
-            }
-
-            var nextMarker = markerCandidates.First();
-            if (depth > 0)
-            {
-                content.Append(renderedPage, position, nextMarker.Index - position);
-            }
-
-            if (nextMarker.IsStart)
-            {
-                depth++;
-                position = nextMarker.Index + nextMarker.Start.Length;
-            }
-            else
-            {
-                depth--;
-                if (depth < 0)
-                {
-                    throw new InvalidOperationException("Static-page content markers are not properly nested.");
-                }
-
-                position = nextMarker.Index + nextMarker.End.Length;
-            }
-        }
-
-        if (depth != 0)
-        {
-            throw new InvalidOperationException("Static-page content markers are not properly closed.");
-        }
-
-        return content.ToString();
-    }
-
-    private static IEnumerable<StaticPageInfo> DiscoverPages(Assembly assembly)
-    {
-        foreach (var componentType in assembly.GetExportedTypes()
-                     .Where(type => typeof(IComponent).IsAssignableFrom(type)))
-        {
-            var routes = componentType.GetCustomAttributes<RouteAttribute>();
-            foreach (var route in routes)
-            {
-                if (route.Template.Contains('{'))
-                {
-                    throw new InvalidOperationException(
-                        $"The static page route '{route.Template}' on '{componentType.FullName}' " +
-                        "contains a route parameter, which is not supported yet.");
-                }
-
-                var filePath = CreateFilePath(route.Template, componentType.Name);
-                yield return new StaticPageInfo(route.Template, filePath, componentType.Name, componentType);
-            }
-        }
+        return Task.FromResult(pages.Length);
     }
 
     private static string CreateFilePath(string route, string pageName)
@@ -170,7 +66,7 @@ public sealed class StaticPageGenerator
     private static string CreateHtmlDocument(
         StaticPageInfo page,
         string staticContent,
-        StaticPageMetadata metadata,
+        StaticSourcePageAnalyzer.StaticPageMetadataValues metadata,
         StaticPagesConfiguration? configuration,
         StaticPageGeneratorOptions options)
     {
@@ -253,10 +149,7 @@ public sealed class StaticPageGenerator
 
     private static string EncodeXml(string value) => System.Security.SecurityElement.Escape(value) ?? string.Empty;
 
-    private sealed record StaticPageInfo(string Route, string FilePath, string PageName, Type ComponentType)
-    {
-        public StaticPageMetadata? Metadata { get; set; }
-    }
+    private sealed record StaticPageInfo(string Route, string FilePath, string PageName, string Content, StaticSourcePageAnalyzer.StaticPageMetadataValues Metadata);
 
     private sealed record StaticPagesConfiguration(string? SiteUrl);
 

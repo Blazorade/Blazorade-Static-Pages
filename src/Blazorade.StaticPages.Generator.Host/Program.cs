@@ -10,10 +10,10 @@ try
 {
     var generator = new StaticPageGenerator();
     var count = await generator.GenerateAsync(new StaticPageGeneratorOptions(
-        Path.GetFullPath(args[0]),
-        Path.GetFullPath(args[1]),
-        Path.GetFullPath(args[2]),
-        args.Length > 3 ? args[3] : null));
+        Path.GetFullPath(args[0].Replace("\"", string.Empty)),
+        Path.GetFullPath(args[1].Replace("\"", string.Empty)),
+        Path.GetFullPath(args[2].Replace("\"", string.Empty)),
+        args.Length > 3 ? args[3].Replace("\"", string.Empty) : null));
 
     Console.WriteLine($"Generated {count} static page(s).");
     return 0;
