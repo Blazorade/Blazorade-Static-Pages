@@ -5,4 +5,5 @@ namespace BlazoradeStaticPagesDev.Pages;
 /// </summary>
 public partial class Config
 {
+    private const string title = "Configuring Blazorade Static Pages";
 }

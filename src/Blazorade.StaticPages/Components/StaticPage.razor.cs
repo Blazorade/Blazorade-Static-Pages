@@ -1,5 +1,7 @@
 using Blazorade.Core.Components;
+using Blazorade.StaticPages.StaticGeneration;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazorade.StaticPages.Components;
 
@@ -8,6 +10,9 @@ namespace Blazorade.StaticPages.Components;
 /// </summary>
 public partial class StaticPage : BlazoradeComponentBase
 {
+    [Inject]
+    private IServiceProvider Services { get; set; } = default!;
+
     /// <summary>
     /// Gets or sets the page title used for generated title metadata.
     /// </summary>
@@ -46,4 +51,16 @@ public partial class StaticPage : BlazoradeComponentBase
     /// </summary>
     [Parameter]
     public bool IncludeInSitemap { get; set; } = true;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        Services.GetService<IStaticPageMetadataSink>()?.Capture(new StaticPageMetadata(
+            Title,
+            Description,
+            Date,
+            Image,
+            Locale,
+            IncludeInSitemap));
+    }
 }

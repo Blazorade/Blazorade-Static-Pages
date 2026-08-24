@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <BlazoradeStaticPagesGeneratorHost>$(MSBuildThisFileDirectory)src\Blazorade.StaticPages.Generator.Host\bin\$(Configuration)\net10.0\Blazorade.StaticPages.Generator.Host.dll</BlazoradeStaticPagesGeneratorHost>
+    <BlazoradeStaticPagesGeneratedOutput>$(IntermediateOutputPath)Blazorade.StaticPages\generated</BlazoradeStaticPagesGeneratedOutput>
+  </PropertyGroup>
+
+  <Target Name="BuildBlazoradeStaticPagesGenerator" BeforeTargets="GenerateBlazoradeStaticPages" Condition="'$(MSBuildProjectName)' != 'Blazorade.StaticPages' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator.Host' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator' and Exists('$(MSBuildThisFileDirectory)src\Blazorade.StaticPages.Generator.Host\Blazorade.StaticPages.Generator.Host.csproj')">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)src\Blazorade.StaticPages.Generator.Host\Blazorade.StaticPages.Generator.Host.csproj" Properties="Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="GenerateBlazoradeStaticPages" AfterTargets="Build" Condition="Exists('$(TargetPath)') and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator.Host' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages'">
+    <RemoveDir Directories="$(BlazoradeStaticPagesGeneratedOutput)" />
+    <Warning Text="blazorade.config.json was not found. Configuration-dependent metadata will be omitted from generated static pages." Condition="!Exists('$(MSBuildProjectDirectory)\blazorade.config.json')" />
+    <Exec Command="dotnet &quot;$(BlazoradeStaticPagesGeneratorHost)&quot; &quot;$(TargetPath)&quot; &quot;$(BlazoradeStaticPagesGeneratedOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot;" />
+    <ItemGroup>
+      <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(TargetDir)wwwroot" />
+    <Copy
+      SourceFiles="@(BlazoradeStaticPagesGeneratedFile)"
+      DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(TargetDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBlazoradeStaticPagesToPublish" AfterTargets="Publish" Condition="Exists('$(BlazoradeStaticPagesGeneratedOutput)') and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator.Host' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages.Generator' and '$(MSBuildProjectName)' != 'Blazorade.StaticPages'">
+    <ItemGroup>
+      <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(PublishDir)" />
+    <Copy
+      SourceFiles="@(BlazoradeStaticPagesGeneratedFile)"
+      DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
+</Project>

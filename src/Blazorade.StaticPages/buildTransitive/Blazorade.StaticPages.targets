@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <BlazoradeStaticPagesGeneratorHost>$(MSBuildThisFileDirectory)..\tools\net10.0\Blazorade.StaticPages.Generator.Host.dll</BlazoradeStaticPagesGeneratorHost>
+    <BlazoradeStaticPagesGeneratedOutput>$(IntermediateOutputPath)Blazorade.StaticPages\generated</BlazoradeStaticPagesGeneratedOutput>
+  </PropertyGroup>
+
+  <Target Name="GenerateBlazoradeStaticPages" AfterTargets="Build" Condition="Exists('$(TargetPath)') and Exists('$(BlazoradeStaticPagesGeneratorHost)')">
+    <RemoveDir Directories="$(BlazoradeStaticPagesGeneratedOutput)" />
+    <Warning Text="blazorade.config.json was not found. Configuration-dependent metadata will be omitted from generated static pages." Condition="!Exists('$(MSBuildProjectDirectory)\blazorade.config.json')" />
+    <Exec Command="dotnet &quot;$(BlazoradeStaticPagesGeneratorHost)&quot; &quot;$(TargetPath)&quot; &quot;$(BlazoradeStaticPagesGeneratedOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot;" />
+    <ItemGroup>
+      <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
+    </ItemGroup>
+    <MakeDir Directories="$(TargetDir)wwwroot" />
+    <Copy SourceFiles="@(BlazoradeStaticPagesGeneratedFile)" DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(TargetDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBlazoradeStaticPagesToPublish" AfterTargets="Publish" Condition="Exists('$(BlazoradeStaticPagesGeneratedOutput)') and Exists('$(PublishDir)')">
+    <ItemGroup>
+      <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BlazoradeStaticPagesGeneratedFile)" DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

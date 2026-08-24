@@ -68,9 +68,11 @@ The resulting URL is used for generated canonical metadata, including:
 
 Routes do not need to be duplicated as properties on `StaticPage`.
 
-## Validation
+## Optional configuration and validation
 
-The build should fail with a clear error when `staticPages.siteUrl` is missing or invalid. The configured URL should:
+The configuration file is optional. If `blazorade.config.json` is missing, the build emits a warning and still generates pages. Metadata that requires `staticPages.siteUrl`, such as canonical URLs, Open Graph URLs, absolute image URLs, and sitemap locations, is omitted.
+
+If the file exists, the build reports an error when `staticPages.siteUrl` is missing or invalid. The configured URL should:
 
 - Be absolute.
 - Include a host name.
