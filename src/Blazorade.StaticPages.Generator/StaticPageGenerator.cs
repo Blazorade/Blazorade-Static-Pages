@@ -23,6 +23,7 @@ public sealed class StaticPageGenerator
             .Select(page => new StaticPageInfo(page.Route, page.FilePath, page.PageName, page.Content, page.Metadata))
             .ToArray();
         var configuration = ReadConfiguration(options.ProjectDirectory);
+        var template = ReadHtmlTemplate(options.ProjectDirectory);
 
         Directory.CreateDirectory(options.OutputDirectory);
 
@@ -31,7 +32,7 @@ public sealed class StaticPageGenerator
             var metadata = page.Metadata;
             var outputPath = Path.Combine(options.OutputDirectory, page.FilePath);
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-            File.WriteAllText(outputPath, CreateHtmlDocument(page, page.Content, metadata, configuration, options), Encoding.UTF8);
+            File.WriteAllText(outputPath, CreateHtmlDocument(page, page.Content, metadata, configuration, options, template), Encoding.UTF8);
         }
 
         File.WriteAllText(
@@ -68,7 +69,8 @@ public sealed class StaticPageGenerator
         string staticContent,
         StaticSourcePageAnalyzer.StaticPageMetadataValues metadata,
         StaticPagesConfiguration? configuration,
-        StaticPageGeneratorOptions options)
+        StaticPageGeneratorOptions options,
+        string template)
     {
         var title = EncodeHtml(metadata.Title);
         var canonicalUrl = configuration?.SiteUrl is null
@@ -78,26 +80,135 @@ public sealed class StaticPageGenerator
             ? "_framework/blazor.webassembly.js"
             : options.Bootstrapper;
 
-        return $"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n" +
-               "    <meta charset=\"utf-8\" />\n" +
-               "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" +
-               (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
-               "    <meta property=\"og:type\" content=\"website\" />\n" +
-               $"    <meta property=\"og:title\" content=\"{title}\" />\n" +
-               (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
-               (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\" />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\" />\n") +
-               (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
-               (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +
-               (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{metadata.Date.Value.ToUniversalTime():O}\" />\n") +
-               "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
-               $"    <meta name=\"twitter:title\" content=\"{title}\" />\n" +
-               (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
-               $"    <title>{title}</title>\n" +
-               "    <base href=\"/\" />\n" +
-               "</head>\n<body>\n" +
-               $"    <div id=\"app\">{staticContent}</div>\n" +
-               $"    <script src=\"{System.Net.WebUtility.HtmlEncode(bootstrapper)}\"></script>\n" +
-               "</body>\n</html>\n";
+        var document = ReplaceElementContent(template, "title", title);
+        document = ReplaceElementContentById(document, "app", staticContent);
+        document = ReplaceBootstrapper(document, bootstrapper);
+
+        var metadataMarkup =
+            (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
+            "    <meta property=\"og:type\" content=\"website\" />\n" +
+            $"    <meta property=\"og:title\" content=\"{title}\" />\n" +
+            (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
+            (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\" />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\" />\n") +
+            (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
+            (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +
+            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{metadata.Date.Value.ToUniversalTime():O}\" />\n") +
+            "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
+            $"    <meta name=\"twitter:title\" content=\"{title}\" />\n" +
+            (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n");
+
+        return InsertBeforeClosingTag(document, "head", metadataMarkup);
+    }
+
+    private static string ReadHtmlTemplate(string projectDirectory)
+    {
+        var path = Path.Combine(projectDirectory, "wwwroot", "index.html");
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException($"The Blazor application HTML template '{path}' was not found.");
+        }
+
+        return File.ReadAllText(path);
+    }
+
+    private static string ReplaceElementContent(string document, string elementName, string content)
+    {
+        var openingStart = document.IndexOf($"<{elementName}", StringComparison.OrdinalIgnoreCase);
+        if (openingStart < 0)
+        {
+            throw new InvalidOperationException($"The HTML template does not contain a <{elementName}> element.");
+        }
+
+        var openingEnd = document.IndexOf('>', openingStart);
+        var closingStart = document.IndexOf($"</{elementName}>", openingEnd + 1, StringComparison.OrdinalIgnoreCase);
+        if (openingEnd < 0 || closingStart < 0)
+        {
+            throw new InvalidOperationException($"The HTML template contains an incomplete <{elementName}> element.");
+        }
+
+        return document[..(openingEnd + 1)] + content + document[closingStart..];
+    }
+
+    private static string ReplaceElementContentById(string document, string id, string content)
+    {
+        var openingStart = document.IndexOf("<div id=\"" + id + "\"", StringComparison.OrdinalIgnoreCase);
+        if (openingStart < 0)
+        {
+            throw new InvalidOperationException($"The HTML template does not contain a <div id=\"{id}\"> element.");
+        }
+
+        var openingEnd = document.IndexOf('>', openingStart);
+        if (openingEnd < 0)
+        {
+            throw new InvalidOperationException("The HTML template contains an incomplete app element.");
+        }
+
+        var closingStart = FindMatchingClosingDiv(document, openingEnd);
+        return document[..(openingEnd + 1)] + content + document[closingStart..];
+    }
+
+    private static int FindMatchingClosingDiv(string document, int openingEnd)
+    {
+        var depth = 1;
+        var position = openingEnd + 1;
+        while (position < document.Length)
+        {
+            var nextOpening = document.IndexOf("<div", position, StringComparison.OrdinalIgnoreCase);
+            var nextClosing = document.IndexOf("</div", position, StringComparison.OrdinalIgnoreCase);
+            if (nextClosing < 0)
+            {
+                break;
+            }
+
+            if (nextOpening >= 0 && nextOpening < nextClosing)
+            {
+                depth++;
+                position = document.IndexOf('>', nextOpening) + 1;
+                continue;
+            }
+
+            depth--;
+            if (depth == 0)
+            {
+                return nextClosing;
+            }
+
+            position = document.IndexOf('>', nextClosing) + 1;
+        }
+
+        throw new InvalidOperationException("The HTML template contains an incomplete app element.");
+    }
+
+    private static string ReplaceBootstrapper(string document, string bootstrapper)
+    {
+        var encodedBootstrapper = System.Net.WebUtility.HtmlEncode(bootstrapper);
+        var placeholders = new[]
+        {
+            "_framework/blazor.webassembly#[.{fingerprint}].js",
+            "_framework/blazor.webassembly.js"
+        };
+
+        foreach (var placeholder in placeholders)
+        {
+            if (document.Contains(placeholder, StringComparison.Ordinal))
+            {
+                return document.Replace(placeholder, encodedBootstrapper, StringComparison.Ordinal);
+            }
+        }
+
+        return InsertBeforeClosingTag(document, "body", $"    <script src=\"{encodedBootstrapper}\"></script>\n");
+    }
+
+    private static string InsertBeforeClosingTag(string document, string elementName, string content)
+    {
+        var closingTag = $"</{elementName}>";
+        var closingStart = document.LastIndexOf(closingTag, StringComparison.OrdinalIgnoreCase);
+        if (closingStart < 0)
+        {
+            throw new InvalidOperationException($"The HTML template does not contain a closing </{elementName}> tag.");
+        }
+
+        return document[..closingStart] + content + document[closingStart..];
     }
 
     private static string CreateStaticWebAppsConfiguration(IReadOnlyCollection<StaticPageInfo> pages)
