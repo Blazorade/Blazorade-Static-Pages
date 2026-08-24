@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Blazorade.StaticPages</name>
+    </assembly>
+    <members>
+        <member name="T:Blazorade.StaticPages.Components.InteractiveContent">
+            <summary>
+            Marks a subtree that must be omitted from generated static output.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.Components.StaticContent">
+            <summary>
+            Marks the portion of a reusable component that may be included in generated static output.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.Components.StaticPage">
+            <summary>
+            Marks a routable component as a static page and provides metadata for generated HTML.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.Title">
+            <summary>
+            Gets or sets the page title used for generated title metadata.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.Description">
+            <summary>
+            Gets or sets the page description used for generated description metadata.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.Date">
+            <summary>
+            Gets or sets the page date used for generated date metadata.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.Image">
+            <summary>
+            Gets or sets the page image URL used for generated social metadata.
+            Relative URLs are resolved against the configured site URL during static page generation.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.Locale">
+            <summary>
+            Gets or sets the page locale in BCP 47 format.
+            Hyphens are replaced with underscores when generating the <c>og:locale</c> metadata property.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.IncludeInSitemap">
+            <summary>
+            Gets or sets a value indicating whether the page should be included in the generated sitemap.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers">
+            <summary>
+            Defines the render markers used to identify content for static-page output.
+            </summary>
+        </member>
+        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticPageStart">
+            <summary>
+            Gets the marker emitted before a static page's content.
+            </summary>
+        </member>
+        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticPageEnd">
+            <summary>
+            Gets the marker emitted after a static page's content.
+            </summary>
+        </member>
+        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticContentStart">
+            <summary>
+            Gets the marker emitted before explicitly marked static content.
+            </summary>
+        </member>
+        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticContentEnd">
+            <summary>
+            Gets the marker emitted after explicitly marked static content.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext">
+            <summary>
+            Describes the rendering mode used by static-page marker components.
+            </summary>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext"/> class.
+            </summary>
+            <param name="isStaticGeneration">Whether the current render produces static HTML.</param>
+        </member>
+        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext.IsStaticGeneration">
+            <summary>
+            Gets a value indicating whether the current render produces static HTML.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink">
+            <summary>
+            Receives metadata from a static page while it is rendered by the build-time generator.
+            </summary>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink.Capture(Blazorade.StaticPages.StaticGeneration.StaticPageMetadata)">
+            <summary>
+            Records the metadata supplied to a static page.
+            </summary>
+            <param name="metadata">The static page metadata.</param>
+        </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata">
+            <summary>
+            Contains metadata supplied to a static page component.
+            </summary>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.#ctor(System.String,System.String,System.Nullable{System.DateTime},System.String,System.String,System.Boolean)">
+            <summary>
+            Contains metadata supplied to a static page component.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture">
+            <summary>
+            Stores metadata captured during one static page render.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Current">
+            <summary>
+            Gets the most recently captured metadata, or <see langword="null"/> when no page was captured.
+            </summary>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Capture(Blazorade.StaticPages.StaticGeneration.StaticPageMetadata)">
+            <inheritdoc />
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Reset">
+            <summary>
+            Clears metadata captured by a previous render.
+            </summary>
+        </member>
+    </members>
+</doc>

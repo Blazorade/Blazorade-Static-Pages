@@ -1,4 +1,4 @@
-# Blazorade Static Pages product direction
+# Blazorade Static Pages objective and design principles
 
 Blazorade Static Pages is an application-first static page generation library for ordinary Blazor WebAssembly applications. It adds build-time generation of crawler-visible pages without imposing a Markdown-first project structure or replacing standard Blazor development practices.
 

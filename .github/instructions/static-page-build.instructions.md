@@ -1,6 +1,6 @@
 ---
 description: "Build-time rules for Blazorade Static Pages source analysis, static HTML generation, and NuGet build integration."
-applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.Generator/**/*.csproj,src/Blazorade.StaticPages.Generator.Host/**/*.cs,src/Blazorade.StaticPages.Generator.Host/**/*.csproj,src/Blazorade.StaticPages/buildTransitive/**,**/Directory.Build.targets,docs/product-direction.md"
+applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.Generator/**/*.csproj,src/Blazorade.StaticPages.Generator.Host/**/*.cs,src/Blazorade.StaticPages.Generator.Host/**/*.csproj,src/Blazorade.StaticPages/buildTransitive/**,**/Directory.Build.targets,docs/objective-and-design-principles.md"
 ---
 # Blazorade Static Pages build process
 
