@@ -1,6 +1,6 @@
 ---
 description: "Build-time rules for Blazorade Static Pages source analysis, static HTML generation, and NuGet build integration."
-applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.Generator/**/*.csproj,src/Blazorade.StaticPages.Generator.Host/**/*.cs,src/Blazorade.StaticPages.Generator.Host/**/*.csproj,src/Blazorade.StaticPages/buildTransitive/**,**/Directory.Build.targets,docs/objective-and-design-principles.md"
+applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.Generator/**/*.csproj,src/Blazorade.StaticPages.Generator.Host/**/*.cs,src/Blazorade.StaticPages.Generator.Host/**/*.csproj,src/Blazorade.StaticPages/buildTransitive/**,src/Blazorade.StaticPages/README.md,**/Directory.Build.targets,docs/objective-and-design-principles.md"
 ---
 # Blazorade Static Pages build process
 
@@ -8,9 +8,9 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 
 - The consuming Blazor WebAssembly application is the source of truth.
 - Static page generation is source-level analysis of `.razor` files.
-- `HtmlRenderer` may be used when it produces the required static output, but generated pages must remain deterministic and must not depend on browser APIs, JavaScript interop, authentication state, user state, or external runtime data.
-- Component rendering must not include descendants marked with `InteractiveContent`; the marker component must suppress that subtree in generated output.
-- Do not execute arbitrary application code or use runtime service resolution merely to obtain application data during generation.
+- Do not render the application or execute arbitrary application code during generation. Static output must not depend on browser APIs, JavaScript interop, authentication state, user state, or external runtime data.
+- Do not use runtime service resolution merely to obtain application data during generation.
+- `InteractiveContent` excludes its complete descendant subtree during source analysis.
 - Do not parse Razor files with regular expressions. Use Razor syntax/parser APIs or another syntax-tree-based implementation.
 
 ## Page analysis
@@ -22,7 +22,7 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 - Supported value propagation may include literal strings, numeric and Boolean literals, constant references, string concatenation, and interpolation whose operands are statically evaluable. The supported expression subset must remain explicit and deterministic.
 - Do not execute methods, property getters, lifecycle code, DI, or arbitrary C# to resolve a value. Report expressions that cannot be proven statically instead of guessing or silently omitting them.
 - Content directly inside `StaticPage` is included as static HTML.
-- A page-level `StaticContent` sibling of `StaticPage` is also included as static HTML. `StaticPage` supplies the page marker and metadata; it does not need to wrap all static markup.
+- A page-level `StaticContent` sibling of `StaticPage` is also included as static HTML. `StaticPage` supplies page metadata; it does not need to wrap all static markup.
 - `InteractiveContent` excludes its complete descendant subtree.
 - For reusable component tags, include only the component's `StaticContent` subtree.
 - Never blindly include all output from a reusable component.
@@ -46,8 +46,9 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 
 ## Build and packaging
 
-- The runtime library contains transparent marker components and is the only normal compile-time dependency of the WASM application.
-- The generator library may reference the runtime library so it can identify marker component types.
+- Keep package version highlights in descending version order, with the latest release first.
+- The runtime library contains the source-analysis marker components and is the only normal compile-time dependency of the WASM application.
+- The generator identifies marker components by their Razor element names while analyzing source; it must not depend on runtime rendering or marker output.
 - The generator and host are build-time tooling and must not become WASM application references.
 - Package generator tooling under NuGet `tools/net10.0` and MSBuild integration under `buildTransitive`.
 - MSBuild must invoke generation after the complete application build output is finalized, so later Blazor WebAssembly output steps cannot remove generated files.

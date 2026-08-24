@@ -1,13 +1,6 @@
 @inherits Blazorade.Core.Components.BlazoradeComponentBase
 
-@if (IsStaticGeneration)
+@if (RenderInBrowser)
 {
-	@((MarkupString)StaticGenerationMarkers.StaticContentStart)
-}
-
-@ChildContent
-
-@if (IsStaticGeneration)
-{
-	@((MarkupString)StaticGenerationMarkers.StaticContentEnd)
+	@ChildContent
 }

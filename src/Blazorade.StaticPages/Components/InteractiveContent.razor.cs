@@ -1,7 +1,3 @@
-using Blazorade.StaticPages.StaticGeneration;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Blazorade.StaticPages.Components;
 
 /// <summary>
@@ -9,9 +5,4 @@ namespace Blazorade.StaticPages.Components;
 /// </summary>
 public partial class InteractiveContent
 {
-	[Inject]
-	private IServiceProvider Services { get; set; } = default!;
-
-	private bool ShouldRenderContent =>
-		Services.GetService<StaticPageRenderContext>()?.IsStaticGeneration != true;
 }

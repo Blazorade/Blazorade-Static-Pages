@@ -1,6 +1,4 @@
-using Blazorade.StaticPages.StaticGeneration;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Blazorade.StaticPages.Components;
 
@@ -9,9 +7,11 @@ namespace Blazorade.StaticPages.Components;
 /// </summary>
 public partial class StaticContent
 {
-	[Inject]
-	private IServiceProvider Services { get; set; } = default!;
+	/// <summary>
+	/// Gets or sets a value indicating whether the content should be rendered when the app is running in the browser.
+	/// The content is rendered during static generation regardless of this value.
+	/// </summary>
+	[Parameter]
+	public bool RenderInBrowser { get; set; } = true;
 
-	private bool IsStaticGeneration =>
-		Services.GetService<StaticPageRenderContext>()?.IsStaticGeneration == true;
 }

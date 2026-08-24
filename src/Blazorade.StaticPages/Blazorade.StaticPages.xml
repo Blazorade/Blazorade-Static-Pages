@@ -14,9 +14,21 @@
             Marks the portion of a reusable component that may be included in generated static output.
             </summary>
         </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticContent.RenderInBrowser">
+            <summary>
+            Gets or sets a value indicating whether the content should be rendered when the app is running in the browser.
+            The content is rendered during static generation regardless of this value.
+            </summary>
+        </member>
         <member name="T:Blazorade.StaticPages.Components.StaticPage">
             <summary>
             Marks a routable component as a static page and provides metadata for generated HTML.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPage.RenderInBrowser">
+            <summary>
+            Gets or sets a value indicating whether the page content should be rendered when the app is running in the browser.
+            The content is rendered during static generation regardless of this value.
             </summary>
         </member>
         <member name="P:Blazorade.StaticPages.Components.StaticPage.Title">
@@ -51,45 +63,9 @@
             Gets or sets a value indicating whether the page should be included in the generated sitemap.
             </summary>
         </member>
-        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers">
+        <member name="M:Blazorade.StaticPages.Components.StaticPage.OnParametersSet">
             <summary>
-            Defines the render markers used to identify content for static-page output.
-            </summary>
-        </member>
-        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticPageStart">
-            <summary>
-            Gets the marker emitted before a static page's content.
-            </summary>
-        </member>
-        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticPageEnd">
-            <summary>
-            Gets the marker emitted after a static page's content.
-            </summary>
-        </member>
-        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticContentStart">
-            <summary>
-            Gets the marker emitted before explicitly marked static content.
-            </summary>
-        </member>
-        <member name="F:Blazorade.StaticPages.StaticGeneration.StaticGenerationMarkers.StaticContentEnd">
-            <summary>
-            Gets the marker emitted after explicitly marked static content.
-            </summary>
-        </member>
-        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext">
-            <summary>
-            Describes the rendering mode used by static-page marker components.
-            </summary>
-        </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext.#ctor(System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext"/> class.
-            </summary>
-            <param name="isStaticGeneration">Whether the current render produces static HTML.</param>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageRenderContext.IsStaticGeneration">
-            <summary>
-            Gets a value indicating whether the current render produces static HTML.
+            Captures the current page metadata for static generation.
             </summary>
         </member>
         <member name="T:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink">

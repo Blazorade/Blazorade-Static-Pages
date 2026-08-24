@@ -13,8 +13,12 @@ public partial class StaticPage : BlazoradeComponentBase
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
-    private bool IsStaticGeneration =>
-        Services.GetService<StaticPageRenderContext>()?.IsStaticGeneration == true;
+    /// <summary>
+    /// Gets or sets a value indicating whether the page content should be rendered when the app is running in the browser.
+    /// The content is rendered during static generation regardless of this value.
+    /// </summary>
+    [Parameter]
+    public bool RenderInBrowser { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the page title used for generated title metadata.
@@ -55,6 +59,9 @@ public partial class StaticPage : BlazoradeComponentBase
     [Parameter]
     public bool IncludeInSitemap { get; set; } = true;
 
+    /// <summary>
+    /// Captures the current page metadata for static generation.
+    /// </summary>
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
