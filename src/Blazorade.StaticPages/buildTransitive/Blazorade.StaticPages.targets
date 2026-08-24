@@ -19,9 +19,11 @@
     <ItemGroup>
       <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
       <BlazoradeStaticPagesPublishedBootstrapper Include="$(PublishDir)wwwroot\_framework\blazor.webassembly.*.js" />
+      <BlazoradeStaticPagesPublishedDotnetBootstrapper Include="$(PublishDir)wwwroot\_framework\dotnet.??????????.js" />
     </ItemGroup>
-    <Copy SourceFiles="@(BlazoradeStaticPagesGeneratedFile)" DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(BlazoradeStaticPagesGeneratedFile)" DestinationFiles="@(BlazoradeStaticPagesGeneratedFile->'$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(BlazoradeStaticPagesPublishedBootstrapper)" DestinationFiles="$(PublishDir)wwwroot\_framework\blazor.webassembly.js" SkipUnchangedFiles="true" Condition="@(BlazoradeStaticPagesPublishedBootstrapper->Count()) == '1'" />
+    <Copy SourceFiles="@(BlazoradeStaticPagesPublishedDotnetBootstrapper)" DestinationFiles="$(PublishDir)wwwroot\_framework\dotnet.js" SkipUnchangedFiles="true" Condition="@(BlazoradeStaticPagesPublishedDotnetBootstrapper->Count()) == '1'" />
   </Target>
 
 </Project>

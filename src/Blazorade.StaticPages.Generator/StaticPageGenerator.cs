@@ -37,7 +37,7 @@ public sealed class StaticPageGenerator
         File.WriteAllText(
             Path.Combine(options.OutputDirectory, "staticwebapp.config.json"),
             CreateStaticWebAppsConfiguration(pages),
-            Encoding.UTF8);
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
         if (configuration?.SiteUrl is not null)
         {
