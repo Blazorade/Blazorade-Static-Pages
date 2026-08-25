@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageId>Blazorade.StaticPages</PackageId>
-		<Version>1.0.0-preview.6</Version>
+		<Version>1.0.0-preview.7</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Copyright>Copyright (c) Mika Berglund 2026</Copyright>
 		<RepositoryType>git</RepositoryType>
@@ -28,18 +28,9 @@
 
 	<ItemGroup>
 		<None Include="buildTransitive\Blazorade.StaticPages.targets" Pack="true" PackagePath="buildTransitive\" />
-		<None Include="..\Blazorade.StaticPages.Generator.Host\bin\$(Configuration)\net10.0\**\*" Pack="true" PackagePath="tools\net10.0\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.dll" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.deps.json" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.dll" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.exe" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.pdb" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.runtimeconfig.json" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.pdb" />
-	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Microsoft.AspNetCore.Razor.Language.dll" />
+		<None Include="..\Blazorade.StaticPages.Generator.Host\bin\$(Configuration)\net10.0\**\*" Pack="true" PackagePath="tools\net10.0\">
+			<Visible>false</Visible>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>

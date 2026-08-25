@@ -66,6 +66,11 @@ The generator does not execute application code. Values that depend on services,
 
 ## Version highlights
 
+### v1.0.0-preview.7
+
+- Improved compile-time string expression analysis for static content and metadata.
+- String values can now be resolved from constants and variables, parenthesized expressions, and string concatenation.
+
 ### v1.0.0-preview.6
 
 - Added build-configuration-specific configuration files such as `blazorade.config.Debug.json`, `blazorade.config.Release.json`, and `blazorade.config.Pre-Prod.json`.

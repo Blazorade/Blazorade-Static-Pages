@@ -1,6 +1,9 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Blazorade.StaticPages.Generator;
 
@@ -233,7 +236,7 @@ internal sealed class StaticSourcePageAnalyzer
 
     private static Dictionary<string, string?> ReadConstants(SourceComponent component)
     {
-        var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var expressions = new Dictionary<string, ExpressionSyntax>(StringComparer.OrdinalIgnoreCase);
         var codeBehind = Path.ChangeExtension(component.Path, ".razor.cs");
         var sources = File.Exists(codeBehind)
             ? new[] { component.Source, File.ReadAllText(codeBehind) }
@@ -244,8 +247,7 @@ internal sealed class StaticSourcePageAnalyzer
             foreach (var line in source.Split('\n'))
             {
                 var trimmed = line.Trim();
-                // Quick checks: must contain '=' and a string literal marker '"'
-                if (!trimmed.Contains('=') || !trimmed.Contains('"'))
+                if (!trimmed.Contains('='))
                 {
                     continue;
                 }
@@ -264,31 +266,99 @@ internal sealed class StaticSourcePageAnalyzer
                     right = right[..^1].Trim();
                 }
 
-                // Only string literal initializers are supported here
-                if (right.Length >= 2 && right[0] == '"' && right[^1] == '"')
+                var tokens = left.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length == 0)
                 {
-                    // Determine the identifier name from the left-hand side tokens.
-                    // Examples supported: "const string Title = \"...\";", "string title = \"...\";",
-                    // "private readonly string title = \"...\";", "var title = \"...\";"
-                    var tokens = left.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (tokens.Length == 0)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var name = tokens.Last();
-                    // name should be a valid identifier-like token; skip if it contains invalid chars
-                    if (string.IsNullOrEmpty(name) || !(char.IsLetter(name[0]) || name[0] == '_'))
-                    {
-                        continue;
-                    }
+                var name = tokens.Last();
+                if (string.IsNullOrEmpty(name) || !(char.IsLetter(name[0]) || name[0] == '_'))
+                {
+                    continue;
+                }
 
-                    values[name] = right[1..^1].Replace("\\\"", "\"");
+                var expression = SyntaxFactory.ParseExpression(right);
+                if (!expression.ContainsDiagnostics)
+                {
+                    expressions[name] = expression;
                 }
             }
         }
 
+        var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in expressions.Keys)
+        {
+            var resolving = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (TryEvaluateString(expressions, name, values, resolving, out var value))
+            {
+                values[name] = value;
+            }
+        }
+
         return values;
+    }
+
+    private static bool TryEvaluateString(
+        IReadOnlyDictionary<string, ExpressionSyntax> expressions,
+        string name,
+        IDictionary<string, string?> values,
+        ISet<string> resolving,
+        out string? value)
+    {
+        if (values.TryGetValue(name, out value))
+        {
+            return true;
+        }
+
+        if (!expressions.TryGetValue(name, out var expression) || !resolving.Add(name))
+        {
+            value = null;
+            return false;
+        }
+
+        var evaluated = TryEvaluateString(expression, expressions, values, resolving, out value);
+        resolving.Remove(name);
+        if (evaluated)
+        {
+            values[name] = value;
+        }
+
+        return evaluated;
+    }
+
+    private static bool TryEvaluateString(
+        ExpressionSyntax expression,
+        IReadOnlyDictionary<string, ExpressionSyntax> expressions,
+        IDictionary<string, string?> values,
+        ISet<string> resolving,
+        out string? value)
+    {
+        switch (expression)
+        {
+            case LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression):
+                value = literal.Token.ValueText;
+                return true;
+
+            case IdentifierNameSyntax identifier:
+                return TryEvaluateString(expressions, identifier.Identifier.ValueText, values, resolving, out value);
+
+            case ParenthesizedExpressionSyntax parenthesized:
+                return TryEvaluateString(parenthesized.Expression, expressions, values, resolving, out value);
+
+            case BinaryExpressionSyntax binary when binary.IsKind(SyntaxKind.AddExpression):
+                if (TryEvaluateString(binary.Left, expressions, values, resolving, out var left)
+                    && TryEvaluateString(binary.Right, expressions, values, resolving, out var right))
+                {
+                    value = left + right;
+                    return true;
+                }
+
+                break;
+        }
+
+        value = null;
+        return false;
     }
 
     private static string? Evaluate(string? value, IReadOnlyDictionary<string, string?> constants, SourceComponent owner, string route)
