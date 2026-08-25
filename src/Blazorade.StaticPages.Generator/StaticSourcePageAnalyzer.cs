@@ -244,24 +244,46 @@ internal sealed class StaticSourcePageAnalyzer
             foreach (var line in source.Split('\n'))
             {
                 var trimmed = line.Trim();
-                var marker = trimmed.IndexOf("const ", StringComparison.Ordinal);
-                if (marker < 0)
+                // Quick checks: must contain '=' and a string literal marker '"'
+                if (!trimmed.Contains('=') || !trimmed.Contains('"'))
                 {
                     continue;
                 }
 
-                var declaration = trimmed[(marker + 6)..];
-                var equals = declaration.IndexOf('=');
+                var equals = trimmed.IndexOf('=');
                 if (equals < 0)
                 {
                     continue;
                 }
 
-                var name = declaration[..equals].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
-                var value = declaration[(equals + 1)..].Trim().TrimEnd(';').Trim();
-                if (value.Length >= 2 && value[0] == '"' && value[^1] == '"')
+                var left = trimmed[..equals].Trim();
+                var right = trimmed[(equals + 1)..].Trim();
+                // Trim trailing semicolon if present
+                if (right.EndsWith(';'))
                 {
-                    values[name] = value[1..^1].Replace("\\\"", "\"");
+                    right = right[..^1].Trim();
+                }
+
+                // Only string literal initializers are supported here
+                if (right.Length >= 2 && right[0] == '"' && right[^1] == '"')
+                {
+                    // Determine the identifier name from the left-hand side tokens.
+                    // Examples supported: "const string Title = \"...\";", "string title = \"...\";",
+                    // "private readonly string title = \"...\";", "var title = \"...\";"
+                    var tokens = left.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (tokens.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var name = tokens.Last();
+                    // name should be a valid identifier-like token; skip if it contains invalid chars
+                    if (string.IsNullOrEmpty(name) || !(char.IsLetter(name[0]) || name[0] == '_'))
+                    {
+                        continue;
+                    }
+
+                    values[name] = right[1..^1].Replace("\\\"", "\"");
                 }
             }
         }
