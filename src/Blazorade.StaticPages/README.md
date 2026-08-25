@@ -45,7 +45,7 @@ To configure the public site URL used for canonical URLs and sitemap generation,
 
 Only routable components that explicitly contain a `<StaticPage>` component are included in static page generation. Other routable components remain normal interactive Blazor pages and are ignored by the generator. It is valid for an application to have no static pages.
 
-The `Title` and other static page metadata values must be resolvable at build time. String constants can be declared in the Razor component's `@code` block or in its matching `.razor.cs` code-behind file:
+The `Title` and other static page metadata values must be resolvable at build time. String constants and string-initialized variables can be declared in the Razor component's `@code` block or in its matching `.razor.cs` code-behind file:
 
 ```razor
 @page "/"
@@ -63,6 +63,11 @@ The `Title` and other static page metadata values must be resolvable at build ti
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Version highlights
+
+### v1.0.0-preview.5
+
+- String-initialized variables declared in Razor components or matching `.razor.cs` code-behind files are supported for static content and metadata.
+- Compile-time string values are discovered consistently for components regardless of their source folder.
 
 ### v1.0.0-preview.4
 
