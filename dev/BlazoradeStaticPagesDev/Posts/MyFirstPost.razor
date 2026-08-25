@@ -1,0 +1,16 @@
+﻿@page "/my-first-post"
+
+@code {
+    string title = "My First Post";
+    string description = "This is the description of my first post in Blazorade Static Pages.";
+}
+
+<StaticPage Title="@title" Description="@description">
+    <main>
+        <article>
+            <h1>@title</h1>
+
+            <p>@description</p>
+        </article>
+    </main>
+</StaticPage>

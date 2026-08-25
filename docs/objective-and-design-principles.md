@@ -122,39 +122,39 @@ StaticPage
  └── InteractiveContent          → exclude entire subtree
 ```
 
-Static Pages may inspect or execute components during analysis, but only content permitted by this contract becomes generated HTML. It must not blindly include every output produced by every component.
+Static Pages analyzes component source during the build, but only content permitted by this contract becomes generated HTML. It does not execute components or blindly include every output produced by every component.
 
 Components containing browser-only or runtime-only behavior must expose only a safe `StaticContent` representation, with interactive portions under `InteractiveContent`.
 
 ## Build and generation workflow
 
-The conceptual workflow is:
+The current workflow is:
 
 ```text
 dotnet build
     ↓
-Compiled Blazor assemblies
+Completed application build
     ↓
-Static Pages generation target or command
+Static Pages MSBuild target
     ↓
 Static page discovery and component-tree analysis
     ↓
 Generated HTML, sitemap, and route configuration
 ```
 
-The generator should use a dedicated static-rendering host or renderer after compilation. It must operate on compiled components and a controlled render tree rather than parsing `.razor` source files as plain text.
+The generator uses a dedicated build-time host, but the current implementation analyzes the consuming project's `.razor` source files with Razor syntax validation and a markup tree. It does not execute compiled components or perform runtime rendering.
 
-The initial renderer should:
+The current analyzer:
 
-1. Discover routable components containing `StaticPage`.
+1. Discover routable source components containing exactly one top-level `StaticPage`.
 2. Read or capture their metadata.
-3. Render or analyse the component tree in a static extraction context.
+3. Analyze the component tree using only supported compile-time values.
 4. Treat direct page content and page-level `StaticContent` as static.
 5. Traverse reusable components to find their `StaticContent`.
 6. Skip `InteractiveContent` subtrees completely.
 7. Compose the collected fragments into an HTML page shell.
-8. Generate sitemap entries only for pages with `IncludeInSitemap="true"`.
-9. Generate route configuration and other static output.
+8. Generate sitemap entries for pages unless `IncludeInSitemap="false"`.
+9. Generate route configuration and other static output. See [Static generation](static-generation.md) for the complete output and metadata contract.
 
 ## Static rendering constraints
 

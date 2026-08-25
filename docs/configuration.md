@@ -70,9 +70,9 @@ Routes do not need to be duplicated as properties on `StaticPage`.
 
 ## Optional configuration and validation
 
-The configuration file is optional. If `blazorade.config.json` is missing, the build emits a warning and still generates pages. Metadata that requires `staticPages.siteUrl`, such as canonical URLs, Open Graph URLs, absolute image URLs, and sitemap locations, is omitted.
+The configuration file is optional. If `blazorade.config.json` is missing, the build emits a warning and still generates pages. Metadata that requires `staticPages.siteUrl`, such as canonical URLs and sitemap locations, is omitted. A supplied relative `StaticPage.Image` value remains relative when no site URL is configured; it is resolved to an absolute URL only when `siteUrl` is available.
 
-If the file exists, the build reports an error when `staticPages.siteUrl` is missing or invalid. The configured URL should:
+If the file contains a non-empty `staticPages.siteUrl`, the build reports an error when that value is invalid. An absent or empty value is treated like missing configuration. When supplied, the configured URL should:
 
 - Be absolute.
 - Include a host name.
@@ -84,4 +84,4 @@ The generator must not derive canonical URLs from the browser's runtime host bec
 
 ## Future configuration
 
-Additional build-time settings may be added to the `staticPages` section of `blazorade.config.json` as the generator grows. Possible areas include metadata defaults, output locations, sitemap generation, and static-hosting route configuration.
+See [Static generation](static-generation.md) for the complete list of generated metadata, output files, route behavior, and component usage. Additional build-time settings may be added to the `staticPages` section of `blazorade.config.json` as the generator grows. Possible areas include metadata defaults, output locations, sitemap generation, and static-hosting route configuration.
