@@ -41,6 +41,8 @@ To configure the public site URL used for canonical URLs and sitemap generation,
 }
 ```
 
+Configuration-specific overrides are supported using the active MSBuild configuration. For example, `blazorade.config.Release.json` overrides `blazorade.config.json` for Release builds, and custom configurations such as `Pre-Prod` use `blazorade.config.Pre-Prod.json`. The files are merged recursively, with values from the configuration-specific file taking precedence.
+
 ## Static page selection and compile-time values
 
 Only routable components that explicitly contain a `<StaticPage>` component are included in static page generation. Other routable components remain normal interactive Blazor pages and are ignored by the generator. It is valid for an application to have no static pages.
@@ -63,6 +65,12 @@ The `Title` and other static page metadata values must be resolvable at build ti
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Version highlights
+
+### v1.0.0-preview.6
+
+- Added build-configuration-specific configuration files such as `blazorade.config.Debug.json`, `blazorade.config.Release.json`, and `blazorade.config.Pre-Prod.json`.
+- Configuration-specific files are recursively merged over the default `blazorade.config.json` file, with configuration-specific values taking precedence.
+- The active configuration is selected through the normal MSBuild or Visual Studio build configuration.
 
 ### v1.0.0-preview.5
 

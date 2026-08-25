@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Blazorade.StaticPages.Generator;
@@ -22,7 +23,7 @@ public sealed class StaticPageGenerator
         var pages = analyzedPages
             .Select(page => new StaticPageInfo(page.Route, page.FilePath, page.PageName, page.Content, page.Metadata))
             .ToArray();
-        var configuration = ReadConfiguration(options.ProjectDirectory);
+        var configuration = ReadConfiguration(options.ProjectDirectory, options.Configuration);
         var template = ReadHtmlTemplate(options.ProjectDirectory);
 
         Directory.CreateDirectory(options.OutputDirectory);
@@ -224,18 +225,49 @@ public sealed class StaticPageGenerator
         });
     }
 
-    private static StaticPagesConfiguration? ReadConfiguration(string projectDirectory)
+    private static StaticPagesConfiguration? ReadConfiguration(string projectDirectory, string? configuration)
     {
-        var path = Path.Combine(projectDirectory, "blazorade.config.json");
-        if (!File.Exists(path))
+        var paths = new[]
+        {
+            Path.Combine(projectDirectory, "blazorade.config.json"),
+            string.IsNullOrWhiteSpace(configuration)
+                ? null
+                : Path.Combine(projectDirectory, $"blazorade.config.{configuration}.json")
+        }
+        .Where(path => path is not null && File.Exists(path))
+        .Cast<string>()
+        .ToArray();
+
+        if (paths.Length == 0)
         {
             return null;
         }
 
-        var document = JsonSerializer.Deserialize<BlazoradeConfiguration>(
-            File.ReadAllText(path),
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        var siteUrl = document?.StaticPages?.SiteUrl;
+        var mergedDocument = new JsonObject();
+        foreach (var path in paths)
+        {
+            JsonNode document;
+            try
+            {
+                document = JsonNode.Parse(File.ReadAllText(path))
+                    ?? throw new InvalidOperationException("The configuration file is empty.");
+            }
+            catch (JsonException exception)
+            {
+                throw new InvalidOperationException($"The configuration file '{path}' contains invalid JSON.", exception);
+            }
+
+            if (document is not JsonObject configurationObject)
+            {
+                throw new InvalidOperationException($"The configuration file '{path}' must contain a JSON object.");
+            }
+
+            MergeConfiguration(mergedDocument, configurationObject);
+        }
+
+        var deserializationOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var deserialized = mergedDocument.Deserialize<BlazoradeConfiguration>(deserializationOptions);
+        var siteUrl = deserialized?.StaticPages?.SiteUrl;
         if (string.IsNullOrWhiteSpace(siteUrl))
         {
             return new StaticPagesConfiguration(null);
@@ -243,10 +275,25 @@ public sealed class StaticPageGenerator
 
         if (!Uri.TryCreate(siteUrl, UriKind.Absolute, out var uri) || string.IsNullOrWhiteSpace(uri.Host))
         {
-            throw new InvalidOperationException($"The 'staticPages.siteUrl' value in '{path}' must be an absolute URL with a host.");
+            throw new InvalidOperationException($"The 'staticPages.siteUrl' value in '{paths[^1]}' must be an absolute URL with a host.");
         }
 
         return new StaticPagesConfiguration(uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/");
+    }
+
+    private static void MergeConfiguration(JsonObject target, JsonObject source)
+    {
+        foreach (var property in source)
+        {
+            if (property.Value is JsonObject sourceObject && target[property.Key] is JsonObject targetObject)
+            {
+                MergeConfiguration(targetObject, sourceObject);
+            }
+            else
+            {
+                target[property.Key] = property.Value?.DeepClone();
+            }
+        }
     }
 
     private static string ResolveUrl(string value, string? siteUrl)
@@ -297,8 +344,10 @@ public sealed class StaticPageGenerator
 /// <param name="ApplicationAssemblyPath">The compiled application assembly path.</param>
 /// <param name="OutputDirectory">The generated output directory.</param>
 /// <param name="Bootstrapper">The relative Blazor bootstrapper path.</param>
+/// <param name="Configuration">The active MSBuild build configuration.</param>
 public sealed record StaticPageGeneratorOptions(
     string ApplicationAssemblyPath,
     string OutputDirectory,
     string ProjectDirectory,
-    string? Bootstrapper = null);
+    string? Bootstrapper = null,
+    string? Configuration = null);

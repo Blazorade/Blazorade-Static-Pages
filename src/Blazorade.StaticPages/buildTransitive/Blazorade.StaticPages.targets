@@ -6,8 +6,8 @@
 
   <Target Name="GenerateBlazoradeStaticPages" AfterTargets="Build" Condition="Exists('$(TargetPath)') and Exists('$(BlazoradeStaticPagesGeneratorHost)')">
     <RemoveDir Directories="$(BlazoradeStaticPagesGeneratedOutput)" />
-    <Warning Text="blazorade.config.json was not found. Configuration-dependent metadata will be omitted from generated static pages." Condition="!Exists('$(MSBuildProjectDirectory)\blazorade.config.json')" />
-    <Exec Command="dotnet &quot;$(BlazoradeStaticPagesGeneratorHost)&quot; &quot;$(TargetPath)&quot; &quot;$(BlazoradeStaticPagesGeneratedOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot;" />
+    <Warning Text="No Blazorade Static Pages configuration file was found. Configuration-dependent metadata will be omitted from generated static pages." Condition="!Exists('$(MSBuildProjectDirectory)\blazorade.config.json') and !Exists('$(MSBuildProjectDirectory)\blazorade.config.$(Configuration).json')" />
+    <Exec Command="dotnet &quot;$(BlazoradeStaticPagesGeneratorHost)&quot; &quot;$(TargetPath)&quot; &quot;$(BlazoradeStaticPagesGeneratedOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot; &quot;&quot; &quot;$(Configuration)&quot;" />
     <ItemGroup>
       <BlazoradeStaticPagesGeneratedFile Include="$(BlazoradeStaticPagesGeneratedOutput)\**\*" />
     </ItemGroup>

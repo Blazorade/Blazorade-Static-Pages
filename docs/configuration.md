@@ -15,6 +15,24 @@ MyBlazorApp/
 
 The Static Pages build process reads this file from the consuming application's project directory. Each Blazorade library owns a dedicated section in the shared configuration file, so libraries can be configured independently without top-level property conflicts.
 
+An optional configuration-specific file can be added using the active MSBuild build configuration:
+
+```text
+blazorade.config.json
+blazorade.config.Debug.json
+blazorade.config.Release.json
+```
+
+The build first reads `blazorade.config.json`, then reads `blazorade.config.$(Configuration).json` when that file exists. Values from the configuration-specific file take precedence. This also supports custom build configurations such as `Pre-Prod`:
+
+```text
+blazorade.config.Pre-Prod.json
+```
+
+No additional environment setting is required. The active configuration is selected through the normal Visual Studio or MSBuild configuration, for example `dotnet publish -c Pre-Prod`.
+
+JSON objects are merged recursively. Scalar values and arrays in the configuration-specific file replace the corresponding values from the default file.
+
 ## Static Pages configuration
 
 Static Pages reads its settings from the `staticPages` section. The `siteUrl` property defines the public origin of the generated site:
