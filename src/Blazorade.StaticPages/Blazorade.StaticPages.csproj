@@ -32,6 +32,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.dll" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.deps.json" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.dll" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.exe" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.pdb" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.Host.runtimeconfig.json" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Blazorade.StaticPages.Generator.pdb" />
+	  <None Remove="..\Blazorade.StaticPages.Generator.Host\bin\Debug\net10.0\Microsoft.AspNetCore.Razor.Language.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Update="README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
