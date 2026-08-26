@@ -3,6 +3,8 @@
     <Project Path="dev/BlazoradeStaticPagesDev/BlazoradeStaticPagesDev.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Blazorade.StaticPages.Generator.Host/Blazorade.StaticPages.Generator.Host.csproj" />
+    <Project Path="src/Blazorade.StaticPages.Generator/Blazorade.StaticPages.Generator.csproj" />
     <Project Path="src/Blazorade.StaticPages/Blazorade.StaticPages.csproj" />
   </Folder>
 </Solution>

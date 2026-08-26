@@ -76,6 +76,11 @@ The generator does not execute application code. Values that depend on services,
 
 ## Version highlights
 
+### v1.0.0-preview.10
+
+- The generator and generator host are rebuilt automatically before the library is built or packed, ensuring that NuGet packages contain matching runtime and build-time components.
+- Package builds support refreshing the generator dependencies even when packing with `--no-build`.
+
 ### v1.0.0-preview.9
 
 - `StaticPage.Date` accepts simple date and date/time strings parsed as `DateTimeOffset`.
