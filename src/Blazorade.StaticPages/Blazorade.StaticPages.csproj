@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageId>Blazorade.StaticPages</PackageId>
-		<Version>1.0.0-preview.8</Version>
+		<Version>1.0.0-preview.9</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Copyright>Copyright (c) Mika Berglund 2026</Copyright>
 		<RepositoryType>git</RepositoryType>

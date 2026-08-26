@@ -109,8 +109,10 @@ The following table describes every metadata element currently created by the ge
 | `<meta property="og:image">` | When `Image` is supplied | `StaticPage.Image`; relative values are resolved against `siteUrl` when available |
 | `<meta name="twitter:image">` | When `Image` is supplied | The same resolved image URL |
 | `<meta property="og:locale">` | When `Locale` is supplied | `StaticPage.Locale` with `-` replaced by `_` |
+| `<meta property="article:published_time">` | When `Date` is supplied and valid | The UTC-normalized date/time in concise ISO 8601 format, such as `2026-08-24T00:00:00Z` |
+| `<meta name="date">` | When `Date` is supplied and valid | The UTC-normalized date in ISO 8601 format, such as `2026-08-24` |
 
-`StaticPage.Date` exists on the component API, but the current source analyzer does not populate a date value. Consequently, the current generator does not emit `article:published_time`. Author, keywords, schema, Open Graph site name, and other metadata are not generated unless they already exist in the application HTML template.
+`StaticPage.Date` accepts a date or date/time string that can be parsed as a `DateTimeOffset`. Values without an explicit time-zone offset are interpreted as UTC, and values with an offset are normalized to UTC. Invalid values produce a build warning and are omitted from generated date metadata. The `date` name is a commonly supported convention for publication dates; `article:published_time` remains the more specific article metadata property. Author, keywords, schema, Open Graph site name, and other metadata are not generated unless they already exist in the application HTML template.
 
 ## Sitemap
 

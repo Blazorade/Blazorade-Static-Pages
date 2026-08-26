@@ -17,7 +17,7 @@ public interface IStaticPageMetadataSink
 /// </summary>
 /// <param name="Title">The page title used for the document title, Open Graph title, and Twitter title.</param>
 /// <param name="Description">The optional page description used for description, Open Graph description, and Twitter description metadata.</param>
-/// <param name="Date">The optional page date used for article published-time metadata.</param>
+/// <param name="Date">The optional normalized page date used for article published-time and date metadata.</param>
 /// <param name="Image">The optional page image URL used for Open Graph and Twitter image metadata.</param>
 /// <param name="Locale">The optional page locale used for Open Graph locale metadata.</param>
 /// <param name="IncludeInSitemap">A value indicating whether the page should be included in the generated sitemap.</param>
@@ -33,7 +33,7 @@ public interface IStaticPageMetadataSink
 public sealed record StaticPageMetadata(
     string Title,
     string? Description,
-    DateTime? Date,
+    DateTimeOffset? Date,
     string? Image,
     string? Locale,
     bool IncludeInSitemap);

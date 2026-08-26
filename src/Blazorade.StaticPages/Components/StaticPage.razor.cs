@@ -38,9 +38,10 @@ public partial class StaticPage : BlazoradeComponentBase
 
     /// <summary>
     /// Gets or sets the page date used for generated date metadata.
+    /// Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
     /// </summary>
     [Parameter]
-    public DateTime? Date { get; set; }
+    public string? Date { get; set; }
 
     /// <summary>
     /// Gets or sets the page image URL used for generated social metadata.
@@ -70,7 +71,15 @@ public partial class StaticPage : BlazoradeComponentBase
         ? null
         : Navigation.ToAbsoluteUri(Image).AbsoluteUri;
 
-    private string? PublishedTime => Date?.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+    private DateTimeOffset? ParsedDate => StaticPageDateParser.TryParse(Date, out var date) ? date : null;
+
+    private string? PublishedTime => ParsedDate is { } date
+        ? StaticPageDateParser.FormatPublishedTime(date)
+        : null;
+
+    private string? PublishedDate => ParsedDate is { } date
+        ? StaticPageDateParser.FormatDate(date)
+        : null;
 
     /// <summary>
     /// Captures the current page metadata for static generation.
@@ -78,10 +87,15 @@ public partial class StaticPage : BlazoradeComponentBase
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        if (!string.IsNullOrWhiteSpace(Date) && !StaticPageDateParser.TryParse(Date, out _))
+        {
+            throw new InvalidOperationException($"The StaticPage Date value '{Date}' could not be parsed as a DateTimeOffset.");
+        }
+
         Services.GetService<IStaticPageMetadataSink>()?.Capture(new StaticPageMetadata(
             Title,
             Description,
-            Date,
+            ParsedDate,
             Image,
             Locale,
             IncludeInSitemap));

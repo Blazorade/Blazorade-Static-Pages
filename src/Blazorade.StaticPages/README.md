@@ -4,7 +4,7 @@ Blazorade Static Pages is a library for generating crawler-visible static HTML f
 
 The application remains the source of truth. Static content is declared explicitly with source-analysis marker components:
 
-- `StaticPage` identifies a static page and provides metadata such as its title, description, and sitemap inclusion.
+- `StaticPage` identifies a static page and provides metadata such as its title, description, publication date, and sitemap inclusion.
 - `StaticContent` exposes a safe static representation from a reusable component.
 - `InteractiveContent` excludes runtime-only content from generated HTML while leaving it available to the running application.
 
@@ -28,6 +28,16 @@ Add the `Blazorade.StaticPages` package to a Blazor WebAssembly application. Dec
     </InteractiveContent>
 </StaticPage>
 ```
+
+The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
+
+```razor
+<StaticPage Title="Products" Date="2026-05-10T14:30:00+02:00">
+  <h1>Products</h1>
+</StaticPage>
+```
+
+Values without a time-zone offset are interpreted as UTC. The generated page contains a concise `article:published_time` value and a date-only `<meta name="date">` value. Invalid date values produce a build warning and are omitted from the generated metadata.
 
 For reusable components, place the static representation inside `StaticContent`. Runtime-only descendants should be placed inside `InteractiveContent`.
 
@@ -65,6 +75,12 @@ The `Title` and other static page metadata values must be resolvable at build ti
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Version highlights
+
+### v1.0.0-preview.9
+
+- `StaticPage.Date` accepts simple date and date/time strings parsed as `DateTimeOffset`.
+- Date values without a time-zone offset are interpreted as UTC.
+- Generated pages include concise `article:published_time` and date metadata.
 
 ### v1.0.0-preview.8
 

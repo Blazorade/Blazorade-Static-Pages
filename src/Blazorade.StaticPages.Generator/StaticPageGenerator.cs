@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Blazorade.StaticPages.StaticGeneration;
 
 namespace Blazorade.StaticPages.Generator;
 
@@ -93,7 +94,7 @@ public sealed class StaticPageGenerator
             (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\" />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\" />\n") +
             (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
             (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +
-            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{metadata.Date.Value.ToUniversalTime():O}\" />\n") +
+            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\" />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\" />\n") +
             "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
             $"    <meta name=\"twitter:title\" content=\"{title}\" />\n" +
             (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n");

@@ -44,6 +44,7 @@
         <member name="P:Blazorade.StaticPages.Components.StaticPage.Date">
             <summary>
             Gets or sets the page date used for generated date metadata.
+            Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
             </summary>
         </member>
         <member name="P:Blazorade.StaticPages.Components.StaticPage.Image">
@@ -68,6 +69,33 @@
             Captures the current page metadata for static generation.
             </summary>
         </member>
+        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser">
+            <summary>
+            Parses date values supplied to <see cref="P:Blazorade.StaticPages.Components.StaticPage.Date"/>.
+            </summary>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser.TryParse(System.String,System.Nullable{System.DateTimeOffset}@)">
+            <summary>
+            Attempts to parse a static page date as a UTC-normalized date and time.
+            </summary>
+            <param name="value">The date text to parse.</param>
+            <param name="date">The parsed date, or <see langword="null"/> when parsing fails.</param>
+            <returns><see langword="true"/> when the value was parsed successfully; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser.FormatPublishedTime(System.DateTimeOffset)">
+            <summary>
+            Formats a date for the <c>article:published_time</c> metadata property.
+            </summary>
+            <param name="date">The date to format.</param>
+            <returns>A concise UTC date/time value in ISO 8601 format.</returns>
+        </member>
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser.FormatDate(System.DateTimeOffset)">
+            <summary>
+            Formats a date for the standard date metadata value.
+            </summary>
+            <param name="date">The date to format.</param>
+            <returns>A date-only value in ISO 8601 format.</returns>
+        </member>
         <member name="T:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink">
             <summary>
             Receives metadata from a static page while it is rendered by the build-time generator.
@@ -85,7 +113,7 @@
             </summary>
             <param name="Title">The page title used for the document title, Open Graph title, and Twitter title.</param>
             <param name="Description">The optional page description used for description, Open Graph description, and Twitter description metadata.</param>
-            <param name="Date">The optional page date used for article published-time metadata.</param>
+            <param name="Date">The optional normalized page date used for article published-time and date metadata.</param>
             <param name="Image">The optional page image URL used for Open Graph and Twitter image metadata.</param>
             <param name="Locale">The optional page locale used for Open Graph locale metadata.</param>
             <param name="IncludeInSitemap">A value indicating whether the page should be included in the generated sitemap.</param>
@@ -99,13 +127,13 @@
             </para>
             </remarks>
         </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.#ctor(System.String,System.String,System.Nullable{System.DateTime},System.String,System.String,System.Boolean)">
+        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.#ctor(System.String,System.String,System.Nullable{System.DateTimeOffset},System.String,System.String,System.Boolean)">
             <summary>
             Contains metadata supplied to a static page component.
             </summary>
             <param name="Title">The page title used for the document title, Open Graph title, and Twitter title.</param>
             <param name="Description">The optional page description used for description, Open Graph description, and Twitter description metadata.</param>
-            <param name="Date">The optional page date used for article published-time metadata.</param>
+            <param name="Date">The optional normalized page date used for article published-time and date metadata.</param>
             <param name="Image">The optional page image URL used for Open Graph and Twitter image metadata.</param>
             <param name="Locale">The optional page locale used for Open Graph locale metadata.</param>
             <param name="IncludeInSitemap">A value indicating whether the page should be included in the generated sitemap.</param>
@@ -126,7 +154,7 @@
             <summary>The optional page description used for description, Open Graph description, and Twitter description metadata.</summary>
         </member>
         <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Date">
-            <summary>The optional page date used for article published-time metadata.</summary>
+            <summary>The optional normalized page date used for article published-time and date metadata.</summary>
         </member>
         <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Image">
             <summary>The optional page image URL used for Open Graph and Twitter image metadata.</summary>

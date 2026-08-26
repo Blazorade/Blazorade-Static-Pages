@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Blazorade.StaticPages.StaticGeneration;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -445,8 +446,15 @@ internal sealed class StaticSourcePageAnalyzer
                 : null;
 
             var title = Get("Title") ?? throw Error(owner, route, "StaticPage requires a compile-time constant Title.");
+            var dateText = Get("Date");
+            DateTimeOffset? date = null;
+            if (!string.IsNullOrWhiteSpace(dateText) && !StaticPageDateParser.TryParse(dateText, out date))
+            {
+                Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticPage Date value '{dateText}' could not be parsed as a DateTimeOffset.");
+            }
+
             var include = Get("IncludeInSitemap");
-            return new(title, Get("Description"), Get("Image"), Get("Locale"), null, !string.Equals(include, "false", StringComparison.OrdinalIgnoreCase));
+            return new(title, Get("Description"), Get("Image"), Get("Locale"), date, !string.Equals(include, "false", StringComparison.OrdinalIgnoreCase));
         }
     }
 
