@@ -1,10 +1,13 @@
 ﻿@page "/foo/bar"
+@attribute [StaticPage]
 
-<StaticPage Title="Foo">
+<StaticMetadata Title="Foo" />
+
+<StaticContent>
     <main>
         <article>
             <h1>Foo</h1>
             <p>This is the Foo page.</p>
         </article>
     </main>
-</StaticPage>
+</StaticContent>

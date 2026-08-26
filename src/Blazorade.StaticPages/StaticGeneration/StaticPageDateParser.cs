@@ -3,7 +3,7 @@ using System.Globalization;
 namespace Blazorade.StaticPages.StaticGeneration;
 
 /// <summary>
-/// Parses date values supplied to <see cref="Components.StaticPage.Date"/>.
+/// Parses date values supplied to <see cref="Components.StaticMetadata.Date"/>.
 /// </summary>
 internal static class StaticPageDateParser
 {

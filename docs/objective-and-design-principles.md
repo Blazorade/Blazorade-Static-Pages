@@ -19,18 +19,19 @@ The static artifact is the baseline. Runtime enhancement must not be required fo
 
 ## Component contract
 
-### `StaticPage`
+### `StaticPageAttribute` and `StaticMetadata`
 
-`StaticPage` identifies the start of a static page and carries page metadata.
+`StaticPageAttribute` identifies a routable component for static generation. `StaticMetadata` defines the metadata used for generated HTML and optional live browser rendering.
 
 ```razor
 @page "/products"
+@attribute [StaticPage]
 
-<StaticPage
+<StaticMetadata
     Title="Products"
-    Description="Explore our products."
-    IncludeInSitemap="true">
+    Description="Explore our products." />
 
+<StaticContent>
     <h1>Products</h1>
     <p>Browse our product catalogue.</p>
 
@@ -39,19 +40,17 @@ The static artifact is the baseline. Runtime enhancement must not be required fo
     <InteractiveContent>
         <ProductConfigurator />
     </InteractiveContent>
-</StaticPage>
+</StaticContent>
 ```
 
 Rules:
 
-- A routable Blazor component should normally contain one `StaticPage`.
+- A routable Blazor component should contain one `StaticPageAttribute` and one `StaticMetadata` component.
 - The route comes from the normal `@page` directive.
-- `StaticPage` supplies metadata such as `Title`, `Description`, and `IncludeInSitemap`.
-- Future metadata may include canonical URL, change frequency, priority, author, date, keywords, and schema type.
-- Content directly inside `StaticPage` is static by default.
-- `StaticPage` does not have to wrap all page content. A page-level `StaticContent` component may be placed beside it, and that sibling content is included in static output.
-- `StaticPage` renders no wrapper element at runtime.
-- `StaticPage` is primarily a static-page signal and metadata contract.
+- `StaticPageAttribute` controls page selection and sitemap inclusion.
+- `StaticMetadata` requires `Title`; its other metadata values are optional but must be compile-time-resolvable when supplied.
+- Only content inside `StaticContent` is included in the generated body.
+- `StaticMetadata.RenderInBrowser` controls only live metadata rendering.
 
 ### `InteractiveContent`
 
@@ -101,8 +100,7 @@ Rules:
 
 Rules:
 
-- `StaticContent` is not required directly inside `StaticPage`; page-level `StaticContent` may be a sibling of `StaticPage`.
-- Page-level `StaticContent` is included in the page's static output, alongside content directly inside `StaticPage`.
+- Page-level `StaticContent` is included in the page's static output.
 - Reusable components use it to expose a safe static representation.
 - For reusable components, only their `StaticContent` subtree is included when the component is used by a page.
 - It is transparent at runtime and renders no wrapper element.
@@ -114,9 +112,9 @@ Rules:
 The intended extraction model is:
 
 ```text
-StaticPage
- ├── ordinary page markup       → include as static
- ├── sibling StaticContent      → include as static
+StaticPageAttribute
+ ├── StaticMetadata             → generate head metadata
+ ├── StaticContent              → include body content
  ├── reusable component
  │    └── StaticContent          → include exposed fragment
  └── InteractiveContent          → exclude entire subtree
@@ -146,7 +144,7 @@ The generator uses a dedicated build-time host, but the current implementation a
 
 The current analyzer:
 
-1. Discover routable source components containing exactly one top-level `StaticPage`.
+1. Discover routable source components marked with `StaticPageAttribute` and containing exactly one `StaticMetadata`.
 2. Read or capture their metadata.
 3. Analyze the component tree using only supported compile-time values.
 4. Treat direct page content and page-level `StaticContent` as static.
@@ -179,7 +177,7 @@ Data access during static generation is intentionally not defined yet. Future op
 The first implementation should establish the smallest end-to-end vertical slice:
 
 1. Create the basic project structure.
-2. Define transparent `StaticPage`, `StaticContent`, and `InteractiveContent` components.
+2. Define `StaticMetadata`, `StaticContent`, and `InteractiveContent` components plus `StaticPageAttribute`.
 3. Define page metadata types and sitemap inclusion metadata.
 4. Create a minimal test Blazor application containing one routable static page, direct static markup, a reusable component exposing `StaticContent`, and an `InteractiveContent` region.
 5. Implement page discovery.

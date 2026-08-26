@@ -16,13 +16,12 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 ## Page analysis
 
 - Discover routable components from `@page` directives in `.razor` source files.
-- A page is static only when its markup contains `StaticPage`.
-- Read `StaticPage` metadata from statically evaluable expressions, not only literal attributes. For example, a title variable initialized from a string literal may be used both as `Title="@title"` and as `@title` in descendant markup.
+- A page is static only when its markup has a `StaticPageAttribute`.
+- Read `StaticMetadata` values from statically evaluable expressions, not only literal attributes. For example, a title variable initialized from a string literal may be used both as `Title="@title"` and as `@title` in descendant markup.
 - Resolve local constants, fields, and variables whose values can be proven from literals and other statically evaluable expressions. The same resolved value must be used consistently wherever the symbol appears.
 - Supported value propagation may include literal strings, numeric and Boolean literals, constant references, string concatenation, and interpolation whose operands are statically evaluable. The supported expression subset must remain explicit and deterministic.
 - Do not execute methods, property getters, lifecycle code, DI, or arbitrary C# to resolve a value. Report expressions that cannot be proven statically instead of guessing or silently omitting them.
-- Content directly inside `StaticPage` is included as static HTML.
-- A page-level `StaticContent` sibling of `StaticPage` is also included as static HTML. `StaticPage` supplies page metadata; it does not need to wrap all static markup.
+- Only content inside `StaticContent` is included as static HTML. `StaticMetadata` supplies page metadata and does not contribute body markup.
 - `InteractiveContent` excludes its complete descendant subtree.
 - For reusable component tags, include only the component's `StaticContent` subtree.
 - Never blindly include all output from a reusable component.

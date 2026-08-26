@@ -1,7 +1,9 @@
 ﻿@page "/"
+@attribute [StaticPage]
 
-<StaticPage Title="Blazorade Static Pages" Date="2026-08-24">
-    <PageTitle>Blazorade Static Pages</PageTitle>
+<StaticMetadata Title="Blazorade Static Pages" Date="2026-08-24" />
+
+<StaticContent>
 
     <h1>Blazorade Static Pages</h1>
 
@@ -19,7 +21,7 @@
     <h2>How it works</h2>
 
     <p>
-        Mark a routable component with <code>&lt;StaticPage&gt;</code>, then place the content that
+        Mark a routable component with <code>[StaticPage]</code>, then place the content that
         should be available in the generated HTML inside it. At runtime, the marker renders no
         wrapper element, so the application keeps its normal interactive behavior.
     </p>
@@ -63,13 +65,14 @@
     <h2>Core building blocks</h2>
 
     <ul>
-        <li><strong>StaticPage</strong> identifies a page and its metadata.</li>
+        <li><strong>StaticPageAttribute</strong> identifies a page for static generation.</li>
+        <li><strong>StaticMetadata</strong> defines generated page metadata.</li>
         <li><strong>StaticContent</strong> provides a reusable component's static representation.</li>
         <li><strong>InteractiveContent</strong> marks a subtree that belongs only to the runtime application.</li>
     </ul>
 
     <p>
         This page is itself a development sample: it is a regular routable Blazor component using
-        <code>StaticPage</code>, while also providing realistic content for testing the generator.
+        <code>StaticPageAttribute</code>, while also providing realistic content for testing the generator.
     </p>
-</StaticPage>
+</StaticContent>

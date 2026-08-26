@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Blazorade.StaticPages.StaticGeneration;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
@@ -46,16 +47,10 @@ internal sealed class StaticSourcePageAnalyzer
                 continue;
             }
 
-            var document = Parse(component);
-            var staticPages = document.Children.Where(node => node.IsElement("StaticPage")).ToArray();
-            if (staticPages.Length == 0)
+            var staticPageAttributes = ReadStaticPageAttributes(component.Source, component, routes[0]);
+            if (staticPageAttributes is null)
             {
                 continue;
-            }
-
-            if (staticPages.Length > 1)
-            {
-                throw Error(component, routes[0], "A static routable component must contain exactly one <StaticPage> component.");
             }
 
             foreach (var route in routes)
@@ -66,10 +61,16 @@ internal sealed class StaticSourcePageAnalyzer
                 }
 
                 var values = ReadConstants(component);
-                var staticPage = staticPages[0];
-                var metadata = StaticPageMetadataValues.From(staticPage.Attributes, values, component, route);
+                var document = Parse(component);
+                var staticMetadata = FindNodes(document.Children, "StaticMetadata").ToArray();
+                if (staticMetadata.Length != 1)
+                {
+                    throw Error(component, route, "A static routable component must contain exactly one <StaticMetadata> component.");
+                }
+
+                var metadata = StaticPageMetadataValues.From(staticMetadata[0].Attributes, values, staticPageAttributes, component, route);
                 var context = new RenderContext(values, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
-                var pageContent = document.Children.Where(node => node.IsElement("StaticPage") || node.IsElement("StaticContent"));
+                var pageContent = document.Children.Where(node => node.IsElement("StaticContent"));
                 var content = RenderChildren(pageContent, context, component, route, pageRoot: true);
                 pages.Add(new AnalyzedStaticPage(route, CreateFilePath(route, component.Name), component.Name, content, metadata));
             }
@@ -100,7 +101,7 @@ internal sealed class StaticSourcePageAnalyzer
                 continue;
             }
 
-            if (node.IsElement("StaticPage") || node.IsElement("StaticContent"))
+            if (node.IsElement("StaticMetadata") || node.IsElement("StaticContent"))
             {
                 output.Append(RenderChildren(node.Children, context, owner, route, pageRoot));
                 continue;
@@ -233,6 +234,58 @@ internal sealed class StaticSourcePageAnalyzer
         }
 
         return output.ToString();
+    }
+
+    private static IEnumerable<MarkupNode> FindNodes(IEnumerable<MarkupNode> nodes, string name)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.IsElement(name))
+            {
+                yield return node;
+            }
+
+            if (node.Children.Count > 0)
+            {
+                foreach (var child in FindNodes(node.Children, name))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+
+    private static StaticPageAttributeValues? ReadStaticPageAttributes(string source, SourceComponent owner, string route)
+    {
+        var declarations = source.Split('\n')
+            .Select(line => line.Trim())
+            .Where(line => line.StartsWith("@attribute", StringComparison.Ordinal))
+            .Where(line => Regex.IsMatch(line, @"\[\s*StaticPage(?:Attribute)?(?:\s*\(|\s*\])", RegexOptions.CultureInvariant))
+            .ToArray();
+
+        if (declarations.Length == 0)
+        {
+            return null;
+        }
+
+        if (declarations.Length > 1)
+        {
+            throw Error(owner, route, "A routable component must contain at most one StaticPageAttribute.");
+        }
+
+        var declaration = declarations[0];
+        var include = true;
+        var match = Regex.Match(declaration, @"IncludeInSitemap\s*=\s*(?<value>true|false)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (match.Success)
+        {
+            include = bool.Parse(match.Groups["value"].Value);
+        }
+        else if (declaration.Contains("IncludeInSitemap", StringComparison.Ordinal))
+        {
+            throw Error(owner, route, "StaticPageAttribute IncludeInSitemap must be a compile-time true or false value.");
+        }
+
+        return new StaticPageAttributeValues(include);
     }
 
     private static Dictionary<string, string?> ReadConstants(SourceComponent component)
@@ -437,24 +490,25 @@ internal sealed class StaticSourcePageAnalyzer
     /// <summary>
     /// Represents statically evaluable page metadata.
     /// </summary>
-    internal sealed record StaticPageMetadataValues(string Title, string? Description, string? Image, string? Locale, DateTimeOffset? Date, bool IncludeInSitemap)
+    internal sealed record StaticPageAttributeValues(bool IncludeInSitemap);
+
+    internal sealed record StaticPageMetadataValues(string Title, string? Description, string? Author, string? Image, string? Locale, DateTimeOffset? Date, bool IncludeInSitemap)
     {
-        internal static StaticPageMetadataValues From(IReadOnlyList<MarkupAttribute> attributes, IReadOnlyDictionary<string, string?> constants, SourceComponent owner, string route)
+        internal static StaticPageMetadataValues From(IReadOnlyList<MarkupAttribute> attributes, IReadOnlyDictionary<string, string?> constants, StaticPageAttributeValues pageAttribute, SourceComponent owner, string route)
         {
             string? Get(string name) => attributes.FirstOrDefault(attribute => attribute.Name.Equals(name, StringComparison.OrdinalIgnoreCase)) is { } attribute
                 ? Evaluate(attribute.Value, constants, owner, route)
                 : null;
 
-            var title = Get("Title") ?? throw Error(owner, route, "StaticPage requires a compile-time constant Title.");
+            var title = Get("Title") ?? throw Error(owner, route, "StaticMetadata requires a compile-time constant Title.");
             var dateText = Get("Date");
             DateTimeOffset? date = null;
             if (!string.IsNullOrWhiteSpace(dateText) && !StaticPageDateParser.TryParse(dateText, out date))
             {
-                Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticPage Date value '{dateText}' could not be parsed as a DateTimeOffset.");
+                Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata Date value '{dateText}' could not be parsed as a DateTimeOffset.");
             }
 
-            var include = Get("IncludeInSitemap");
-            return new(title, Get("Description"), Get("Image"), Get("Locale"), date, !string.Equals(include, "false", StringComparison.OrdinalIgnoreCase));
+            return new(title, Get("Description"), Get("Author"), Get("Image"), Get("Locale"), date, pageAttribute.IncludeInSitemap);
         }
     }
 

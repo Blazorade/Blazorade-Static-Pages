@@ -5,7 +5,11 @@
     string description = "This is the description of my first post in Blazorade Static Pages.";
 }
 
-<StaticPage Title="@title" Description="@description">
+@attribute [StaticPage]
+
+<StaticMetadata Title="@title" Description="@description" />
+
+<StaticContent>
     <main>
         <article>
             <h1>@title</h1>
@@ -13,4 +17,4 @@
             <p>@description</p>
         </article>
     </main>
-</StaticPage>
+</StaticContent>

@@ -91,6 +91,7 @@ public sealed class StaticPageGenerator
             "    <meta property=\"og:type\" content=\"website\" />\n" +
             $"    <meta property=\"og:title\" content=\"{title}\" />\n" +
             (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
+            (metadata.Author is null ? string.Empty : $"    <meta name=\"author\" content=\"{EncodeHtml(metadata.Author)}\" />\n") +
             (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\" />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\" />\n") +
             (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
             (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +

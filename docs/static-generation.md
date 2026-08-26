@@ -9,7 +9,7 @@ When the consuming application is built:
 1. The MSBuild target runs after `Build` has completed.
 2. The generator scans the project for `.razor` files, excluding `bin` and `obj`.
 3. It finds routable components by reading `@page` directives.
-4. A routable component is selected only when it contains exactly one top-level `StaticPage` component. Routable components without `StaticPage` are ignored.
+4. A routable component is selected only when it has a `StaticPageAttribute`. Routable components without the attribute are ignored.
 5. The generator analyzes the static markup and metadata, then writes generated files to `obj/.../Blazorade.StaticPages/generated`.
 6. The generated files are copied to the build output's `wwwroot` directory. During publish they are copied to the publish output's `wwwroot` directory.
 
@@ -33,16 +33,15 @@ The root page uses the component name to avoid writing an ambiguous `index.html`
 
 The source analyzer builds a markup tree and applies these rules:
 
-- Content directly inside `StaticPage` is included.
-- A top-level `StaticContent` sibling of `StaticPage` is also included.
-- `StaticPage` and `StaticContent` are transparent in the generated fragment; their tags are not emitted.
+- Only content inside `StaticContent` is included in the generated body.
+- `StaticContent` is transparent in the generated fragment; its tag is not emitted.
 - An `InteractiveContent` element and its entire descendant subtree are omitted.
 - A reusable component contributes only its direct `StaticContent` regions. Its ordinary markup is not included automatically.
 - A reusable component with no `StaticContent` contributes nothing.
 - `InteractiveContent` inside a reusable component is omitted even when it is inside a static region.
 - Ordinary HTML elements, attributes, comments, and text are copied into the generated fragment.
 - Razor expressions in static text are limited to known compile-time string constants. Values are HTML-encoded when inserted.
-- `PageTitle` is ignored during source extraction because the page title is generated from `StaticPage.Title`.
+- `StaticMetadata` supplies the generated title and supported metadata.
 
 For example, a reusable component can provide a crawlable representation while keeping its runtime behavior separate:
 
@@ -72,9 +71,13 @@ Metadata and static text must be resolvable without executing code. The current 
     private const string PageTitle = "Welcome";
 }
 
-<StaticPage Title="@PageTitle">
+@attribute [StaticPage]
+
+<StaticMetadata Title="@PageTitle" />
+
+<StaticContent>
     <h1>@PageTitle</h1>
-</StaticPage>
+</StaticContent>
 ```
 
 Service calls, method calls, property getters, fields that are not recognized string constants, lifecycle state, and runtime expressions are not evaluated. Unsupported expressions produce a build error rather than silently producing incomplete content.
@@ -83,7 +86,7 @@ Service calls, method calls, property getters, fields that are not recognized st
 
 Each generated page starts with the consuming application's `wwwroot/index.html` as its template. The generator:
 
-1. Replaces the template's `<title>` element content with `StaticPage.Title`.
+1. Replaces the template's `<title>` element content with `StaticMetadata.Title`.
 2. Replaces the contents of `<div id="app">` with the extracted static fragment.
 3. Replaces the fingerprinted Blazor WebAssembly bootstrapper placeholder with `_framework/blazor.webassembly.js`, or with the configured generator bootstrapper argument.
 4. Inserts generated metadata immediately before `</head>`.
@@ -96,23 +99,24 @@ The following table describes every metadata element currently created by the ge
 
 | Element | Created when | Value source and transformation |
 | --- | --- | --- |
-| `<title>` | Always | `StaticPage.Title` |
+| `<title>` | Always | `StaticMetadata.Title` |
 | `<meta property="og:type" content="website">` | Always | Fixed value `website` |
-| `<meta property="og:title">` | Always | `StaticPage.Title` |
+| `<meta property="og:title">` | Always | `StaticMetadata.Title` |
 | `<meta name="twitter:card" content="summary_large_image">` | Always | Fixed value `summary_large_image` |
-| `<meta name="twitter:title">` | Always | `StaticPage.Title` |
-| `<meta name="description">` | When `Description` is supplied | `StaticPage.Description` |
-| `<meta property="og:description">` | When `Description` is supplied | `StaticPage.Description` |
-| `<meta name="twitter:description">` | When `Description` is supplied | `StaticPage.Description` |
+| `<meta name="twitter:title">` | Always | `StaticMetadata.Title` |
+| `<meta name="description">` | When `Description` is supplied | `StaticMetadata.Description` |
+| `<meta property="og:description">` | When `Description` is supplied | `StaticMetadata.Description` |
+| `<meta name="twitter:description">` | When `Description` is supplied | `StaticMetadata.Description` |
+| `<meta name="author">` | When `Author` is supplied | `StaticMetadata.Author` |
 | `<link rel="canonical">` | When `staticPages.siteUrl` is configured | Configured site URL combined with the page route |
 | `<meta property="og:url">` | When `staticPages.siteUrl` is configured | The same canonical URL |
-| `<meta property="og:image">` | When `Image` is supplied | `StaticPage.Image`; relative values are resolved against `siteUrl` when available |
+| `<meta property="og:image">` | When `Image` is supplied | `StaticMetadata.Image`; relative values are resolved against `siteUrl` when available |
 | `<meta name="twitter:image">` | When `Image` is supplied | The same resolved image URL |
-| `<meta property="og:locale">` | When `Locale` is supplied | `StaticPage.Locale` with `-` replaced by `_` |
+| `<meta property="og:locale">` | When `Locale` is supplied | `StaticMetadata.Locale` with `-` replaced by `_` |
 | `<meta property="article:published_time">` | When `Date` is supplied and valid | The UTC-normalized date/time in concise ISO 8601 format, such as `2026-08-24T00:00:00Z` |
 | `<meta name="date">` | When `Date` is supplied and valid | The UTC-normalized date in ISO 8601 format, such as `2026-08-24` |
 
-`StaticPage.Date` accepts a date or date/time string that can be parsed as a `DateTimeOffset`. Values without an explicit time-zone offset are interpreted as UTC, and values with an offset are normalized to UTC. Invalid values produce a build warning and are omitted from generated date metadata. The `date` name is a commonly supported convention for publication dates; `article:published_time` remains the more specific article metadata property. Author, keywords, schema, Open Graph site name, and other metadata are not generated unless they already exist in the application HTML template.
+`StaticMetadata.Date` accepts a date or date/time string that can be parsed as a `DateTimeOffset`. Values without an explicit time-zone offset are interpreted as UTC, and values with an offset are normalized to UTC. Invalid values produce a build warning and are omitted from generated date metadata. The `date` name is a commonly supported convention for publication dates; `article:published_time` remains the more specific article metadata property. Author, keywords, schema, Open Graph site name, and other metadata are not generated unless they already exist in the application HTML template.
 
 ## Sitemap
 
@@ -143,25 +147,27 @@ During publish, the generated files are copied again after the publish output is
 
 ## Component usage
 
-### `StaticPage`
+### `StaticPageAttribute` and `StaticMetadata`
 
-Place one `StaticPage` in a routable component. The route remains on the page component through `@page`:
+Mark a routable component with `StaticPageAttribute` and place one `StaticMetadata` component in it. The route remains on the page component through `@page`:
 
 ```razor
 @page "/products"
+@attribute [StaticPage]
 
-<StaticPage
+<StaticMetadata
     Title="Products"
     Description="Explore our products."
     Image="images/products.jpg"
-    Locale="en-US"
-    IncludeInSitemap="true">
+    Locale="en-US" />
+
+<StaticContent>
     <h1>Products</h1>
     <p>Browse our product catalogue.</p>
-</StaticPage>
+</StaticContent>
 ```
 
-Supported parameters are `Title` (required and compile-time resolvable), `Description`, `Image`, `Locale`, `Date`, `IncludeInSitemap`, and `RenderInBrowser`. `RenderInBrowser` controls whether the wrapped content is shown by the running browser application; it does not control build-time extraction. The component emits no wrapper element at runtime.
+`StaticMetadata.Title` is required. `Description`, `Author`, `Image`, `Locale`, and `Date` are optional, but every supplied value must resolve to a compile-time value. `RenderInBrowser` defaults to `true`, controls only live metadata rendering, and does not control build-time extraction. `IncludeInSitemap` belongs to `StaticPageAttribute`.
 
 ### `StaticContent`
 
@@ -181,7 +187,7 @@ Use `StaticContent` in a reusable component to define the representation that ma
 </InteractiveContent>
 ```
 
-Use it directly beside `StaticPage` when a page marker should not wrap all static markup. Its `RenderInBrowser` parameter affects runtime visibility only. It emits no wrapper element. Static fragments should be complete, valid HTML; do not expose structurally incomplete fragments such as an isolated `<tr>` unless the surrounding structure is deliberately preserved.
+Use it directly in a page to mark body markup for generation. It emits no wrapper element. Static fragments should be complete, valid HTML; do not expose structurally incomplete fragments such as an isolated `<tr>` unless the surrounding structure is deliberately preserved.
 
 ### `InteractiveContent`
 
@@ -197,4 +203,4 @@ The complete descendant subtree is excluded from generated HTML, but it renders 
 
 ## Errors and limitations
 
-The build fails for invalid Razor syntax, parameterized routes, duplicate static routes, multiple `StaticPage` markers in one routable component, unresolved reusable components, cyclic reusable components, missing required `Title`, and unsupported dynamic expressions. Keep runtime-only behavior inside `InteractiveContent` and provide a deterministic `StaticContent` representation for reusable components that need crawlable output.
+The build fails for invalid Razor syntax, parameterized routes, duplicate static routes, multiple `StaticPageAttribute` or `StaticMetadata` declarations in one routable component, unresolved reusable components, cyclic reusable components, missing required `Title`, and unsupported dynamic expressions. Keep runtime-only behavior inside `InteractiveContent` and provide a deterministic `StaticContent` representation for reusable components that need crawlable output.

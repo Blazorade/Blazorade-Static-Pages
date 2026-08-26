@@ -11,9 +11,9 @@ Blazorade Static Pages is available on NuGet: [Blazorade.StaticPages](https://ww
 
 ## Core contract
 
-Static Pages defines three transparent marker components: `StaticPage` identifies a static page and its metadata, `StaticContent` exposes a reusable component's static representation, and `InteractiveContent` excludes a runtime-only subtree from static output.
+Static Pages uses `StaticPageAttribute` to identify static routable components, `StaticMetadata` to define generated and optional live metadata, `StaticContent` to expose generated body content, and `InteractiveContent` to exclude a runtime-only subtree from static output.
 
-All three components render no wrapper elements at runtime. A routable component normally contains one `StaticPage`; content directly inside it is static by default. Page-level `StaticContent` may be placed beside `StaticPage` when the page marker should not wrap the content.
+`StaticContent` and `InteractiveContent` render no wrapper elements at runtime. A routable component contains `@attribute [StaticPage]`, one `StaticMetadata`, and one or more `StaticContent` regions. Only content inside `StaticContent` is included in generated page bodies.
 
 See [the objective and design principles](docs/objective-and-design-principles.md) for the detailed contract, rendering model, constraints, and planned vertical slice.
 

@@ -20,58 +20,61 @@
             The content is rendered during static generation regardless of this value.
             </summary>
         </member>
-        <member name="T:Blazorade.StaticPages.Components.StaticPage">
+        <member name="T:Blazorade.StaticPages.Components.StaticMetadata">
             <summary>
-            Marks a routable component as a static page and provides metadata for generated HTML.
+            Defines metadata for a statically generated page and optionally renders the same metadata in the browser.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.RenderInBrowser">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Title">
             <summary>
-            Gets or sets a value indicating whether the page content should be rendered when the app is running in the browser.
-            The content is rendered during static generation regardless of this value.
+            Gets or sets the page title.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.Title">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Description">
             <summary>
-            Gets or sets the page title used for generated title metadata.
+            Gets or sets the optional page description.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.Description">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Author">
             <summary>
-            Gets or sets the page description used for generated description metadata.
+            Gets or sets the optional page author.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.Date">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Date">
             <summary>
-            Gets or sets the page date used for generated date metadata.
+            Gets or sets the optional page date.
             Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.Image">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Image">
             <summary>
-            Gets or sets the page image URL used for generated social metadata.
-            Relative URLs are resolved against the configured site URL during static page generation.
+            Gets or sets the optional page image URL.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.Locale">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Locale">
             <summary>
-            Gets or sets the page locale in BCP 47 format.
-            Hyphens are replaced with underscores when generating the <c>og:locale</c> metadata property.
+            Gets or sets the optional page locale in BCP 47 format.
             </summary>
         </member>
-        <member name="P:Blazorade.StaticPages.Components.StaticPage.IncludeInSitemap">
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.RenderInBrowser">
+            <summary>
+            Gets or sets a value indicating whether the metadata should be rendered in the browser.
+            Static generation includes the metadata regardless of this value.
+            </summary>
+        </member>
+        <member name="T:Blazorade.StaticPages.Components.StaticPageAttribute">
+            <summary>
+            Marks a routable component for static page generation.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPageAttribute.IncludeInSitemap">
             <summary>
             Gets or sets a value indicating whether the page should be included in the generated sitemap.
             </summary>
         </member>
-        <member name="M:Blazorade.StaticPages.Components.StaticPage.OnParametersSet">
-            <summary>
-            Captures the current page metadata for static generation.
-            </summary>
-        </member>
         <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser">
             <summary>
-            Parses date values supplied to <see cref="P:Blazorade.StaticPages.Components.StaticPage.Date"/>.
+            Parses date values supplied to <see cref="P:Blazorade.StaticPages.Components.StaticMetadata.Date"/>.
             </summary>
         </member>
         <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser.TryParse(System.String,System.Nullable{System.DateTimeOffset}@)">
@@ -95,93 +98,6 @@
             </summary>
             <param name="date">The date to format.</param>
             <returns>A date-only value in ISO 8601 format.</returns>
-        </member>
-        <member name="T:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink">
-            <summary>
-            Receives metadata from a static page while it is rendered by the build-time generator.
-            </summary>
-        </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.IStaticPageMetadataSink.Capture(Blazorade.StaticPages.StaticGeneration.StaticPageMetadata)">
-            <summary>
-            Records the metadata supplied to a static page.
-            </summary>
-            <param name="metadata">The static page metadata.</param>
-        </member>
-        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata">
-            <summary>
-            Contains metadata supplied to a static page component.
-            </summary>
-            <param name="Title">The page title used for the document title, Open Graph title, and Twitter title.</param>
-            <param name="Description">The optional page description used for description, Open Graph description, and Twitter description metadata.</param>
-            <param name="Date">The optional normalized page date used for article published-time and date metadata.</param>
-            <param name="Image">The optional page image URL used for Open Graph and Twitter image metadata.</param>
-            <param name="Locale">The optional page locale used for Open Graph locale metadata.</param>
-            <param name="IncludeInSitemap">A value indicating whether the page should be included in the generated sitemap.</param>
-            <remarks>
-            The metadata is consumed by both the live <c>StaticPage</c> component and the static HTML generator.
-            The rendering paths must remain synchronized when this contract or its value transformations change.
-            <para>
-            <see cref="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.IncludeInSitemap"/> controls sitemap generation only and does not produce a head element.
-            Canonical URL metadata is derived from the current browser URL during live rendering and from the configured
-            site URL during static generation, so it is intentionally not stored in this record.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.#ctor(System.String,System.String,System.Nullable{System.DateTimeOffset},System.String,System.String,System.Boolean)">
-            <summary>
-            Contains metadata supplied to a static page component.
-            </summary>
-            <param name="Title">The page title used for the document title, Open Graph title, and Twitter title.</param>
-            <param name="Description">The optional page description used for description, Open Graph description, and Twitter description metadata.</param>
-            <param name="Date">The optional normalized page date used for article published-time and date metadata.</param>
-            <param name="Image">The optional page image URL used for Open Graph and Twitter image metadata.</param>
-            <param name="Locale">The optional page locale used for Open Graph locale metadata.</param>
-            <param name="IncludeInSitemap">A value indicating whether the page should be included in the generated sitemap.</param>
-            <remarks>
-            The metadata is consumed by both the live <c>StaticPage</c> component and the static HTML generator.
-            The rendering paths must remain synchronized when this contract or its value transformations change.
-            <para>
-            <see cref="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.IncludeInSitemap"/> controls sitemap generation only and does not produce a head element.
-            Canonical URL metadata is derived from the current browser URL during live rendering and from the configured
-            site URL during static generation, so it is intentionally not stored in this record.
-            </para>
-            </remarks>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Title">
-            <summary>The page title used for the document title, Open Graph title, and Twitter title.</summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Description">
-            <summary>The optional page description used for description, Open Graph description, and Twitter description metadata.</summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Date">
-            <summary>The optional normalized page date used for article published-time and date metadata.</summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Image">
-            <summary>The optional page image URL used for Open Graph and Twitter image metadata.</summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.Locale">
-            <summary>The optional page locale used for Open Graph locale metadata.</summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadata.IncludeInSitemap">
-            <summary>A value indicating whether the page should be included in the generated sitemap.</summary>
-        </member>
-        <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture">
-            <summary>
-            Stores metadata captured during one static page render.
-            </summary>
-        </member>
-        <member name="P:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Current">
-            <summary>
-            Gets the most recently captured metadata, or <see langword="null"/> when no page was captured.
-            </summary>
-        </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Capture(Blazorade.StaticPages.StaticGeneration.StaticPageMetadata)">
-            <inheritdoc />
-        </member>
-        <member name="M:Blazorade.StaticPages.StaticGeneration.StaticPageMetadataCapture.Reset">
-            <summary>
-            Clears metadata captured by a previous render.
-            </summary>
         </member>
     </members>
 </doc>

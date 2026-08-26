@@ -84,11 +84,11 @@ The resulting URL is used for generated canonical metadata, including:
 <meta property="og:url" content="https://www.example.com/products">
 ```
 
-Routes do not need to be duplicated as properties on `StaticPage`.
+Routes do not need to be duplicated as properties on `StaticPageAttribute`.
 
 ## Optional configuration and validation
 
-The configuration file is optional. If `blazorade.config.json` is missing, the build emits a warning and still generates pages. Metadata that requires `staticPages.siteUrl`, such as canonical URLs and sitemap locations, is omitted. A supplied relative `StaticPage.Image` value remains relative when no site URL is configured; it is resolved to an absolute URL only when `siteUrl` is available.
+The configuration file is optional. If `blazorade.config.json` is missing, the build emits a warning and still generates pages. Metadata that requires `staticPages.siteUrl`, such as canonical URLs and sitemap locations, is omitted. A supplied relative `StaticMetadata.Image` value remains relative when no site URL is configured; it is resolved to an absolute URL only when `siteUrl` is available.
 
 If the file contains a non-empty `staticPages.siteUrl`, the build reports an error when that value is invalid. An absent or empty value is treated like missing configuration. When supplied, the configured URL should:
 
