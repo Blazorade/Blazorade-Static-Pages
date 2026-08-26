@@ -2,5 +2,47 @@
 
 @if (RenderInBrowser)
 {
+	<HeadContent>
+		@if (Description is not null)
+		{
+			<meta name="description" content="@Description" />
+		}
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="@Title" />
+
+		@if (Description is not null)
+		{
+			<meta property="og:description" content="@Description" />
+		}
+
+		<link rel="canonical" href="@CanonicalUrl" />
+		<meta property="og:url" content="@CanonicalUrl" />
+
+		@if (Image is not null)
+		{
+			<meta property="og:image" content="@ImageUrl" />
+			<meta name="twitter:image" content="@ImageUrl" />
+		}
+
+		@if (Locale is not null)
+		{
+			<meta property="og:locale" content="@Locale.Replace('-', '_')" />
+		}
+
+		@if (Date is not null)
+		{
+			<meta property="article:published_time" content="@PublishedTime" />
+		}
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="@Title" />
+
+		@if (Description is not null)
+		{
+			<meta name="twitter:description" content="@Description" />
+		}
+	</HeadContent>
+
 	@ChildContent
 }

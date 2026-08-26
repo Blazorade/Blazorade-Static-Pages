@@ -11,6 +11,9 @@ namespace Blazorade.StaticPages.Components;
 public partial class StaticPage : BlazoradeComponentBase
 {
     [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
     /// <summary>
@@ -58,6 +61,16 @@ public partial class StaticPage : BlazoradeComponentBase
     /// </summary>
     [Parameter]
     public bool IncludeInSitemap { get; set; } = true;
+
+    private string CanonicalUrl => Navigation.ToAbsoluteUri(Navigation.Uri).GetComponents(
+        UriComponents.SchemeAndServer | UriComponents.Path,
+        UriFormat.UriEscaped);
+
+    private string? ImageUrl => Image is null
+        ? null
+        : Navigation.ToAbsoluteUri(Image).AbsoluteUri;
+
+    private string? PublishedTime => Date?.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Captures the current page metadata for static generation.
