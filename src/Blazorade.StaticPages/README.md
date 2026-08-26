@@ -4,6 +4,8 @@ Blazorade Static Pages is a library for generating crawler-visible static HTML f
 
 The application remains the source of truth. Static pages are declared with a source-analysis attribute and marker components:
 
+Read [Adding static page generation to Blazor WebAssembly](https://mikaberglund.com/add-static-page-generation-to-blazor-webassembly/) for an introduction to using the library.
+
 - `StaticPageAttribute` identifies a static page and controls sitemap inclusion.
 - `StaticMetadata` defines the page metadata used for generated HTML and optional live browser rendering.
 - `StaticContent` exposes a safe static representation from a reusable component.
