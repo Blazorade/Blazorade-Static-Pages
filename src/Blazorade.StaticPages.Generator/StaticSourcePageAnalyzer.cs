@@ -16,6 +16,7 @@ internal sealed class StaticSourcePageAnalyzer
 {
     private readonly string projectDirectory;
     private readonly Dictionary<string, SourceComponent> components;
+    private readonly Dictionary<string, ExpressionSyntax> projectConstants;
 
     /// <summary>
     /// Initializes a source analyzer for a consuming project.
@@ -30,6 +31,7 @@ internal sealed class StaticSourcePageAnalyzer
             .Select(path => new SourceComponent(path, Path.GetFileNameWithoutExtension(path), File.ReadAllText(path)))
             .GroupBy(component => component.Name, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Single(), StringComparer.Ordinal);
+        projectConstants = ReadProjectConstants();
     }
 
     /// <summary>
@@ -288,7 +290,7 @@ internal sealed class StaticSourcePageAnalyzer
         return new StaticPageAttributeValues(include);
     }
 
-    private static Dictionary<string, string?> ReadConstants(SourceComponent component)
+    private Dictionary<string, string?> ReadConstants(SourceComponent component)
     {
         var expressions = new Dictionary<string, ExpressionSyntax>(StringComparer.OrdinalIgnoreCase);
         var codeBehind = Path.ChangeExtension(component.Path, ".razor.cs");
@@ -340,6 +342,14 @@ internal sealed class StaticSourcePageAnalyzer
             }
         }
 
+        foreach (var projectConstant in projectConstants)
+        {
+            if (!expressions.ContainsKey(projectConstant.Key))
+            {
+                expressions[projectConstant.Key] = projectConstant.Value;
+            }
+        }
+
         var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var name in expressions.Keys)
         {
@@ -351,6 +361,41 @@ internal sealed class StaticSourcePageAnalyzer
         }
 
         return values;
+    }
+
+    private Dictionary<string, ExpressionSyntax> ReadProjectConstants()
+    {
+        var expressions = new Dictionary<string, ExpressionSyntax>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var path in Directory.EnumerateFiles(projectDirectory, "*.cs", SearchOption.AllDirectories)
+                     .Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                     .Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+        {
+            var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(path), path: path);
+            foreach (var field in tree.GetRoot().DescendantNodes().OfType<FieldDeclarationSyntax>())
+            {
+                if (!field.Modifiers.Any(SyntaxKind.ConstKeyword))
+                {
+                    continue;
+                }
+
+                var containingType = field.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
+                if (containingType is null)
+                {
+                    continue;
+                }
+
+                foreach (var variable in field.Declaration.Variables)
+                {
+                    if (variable.Initializer is not null)
+                    {
+                        expressions[$"{containingType.Identifier.ValueText}.{variable.Identifier.ValueText}"] = variable.Initializer.Value;
+                    }
+                }
+            }
+        }
+
+        return expressions;
     }
 
     private static bool TryEvaluateString(
@@ -397,6 +442,9 @@ internal sealed class StaticSourcePageAnalyzer
             case IdentifierNameSyntax identifier:
                 return TryEvaluateString(expressions, identifier.Identifier.ValueText, values, resolving, out value);
 
+            case MemberAccessExpressionSyntax memberAccess:
+                return TryEvaluateString(expressions, memberAccess.ToString(), values, resolving, out value);
+
             case ParenthesizedExpressionSyntax parenthesized:
                 return TryEvaluateString(parenthesized.Expression, expressions, values, resolving, out value);
 
@@ -424,8 +472,10 @@ internal sealed class StaticSourcePageAnalyzer
 
         if (value.StartsWith("@", StringComparison.Ordinal))
         {
-            var name = value[1..].Split('.').Last();
-            if (!constants.TryGetValue(name, out var resolved))
+            var expression = value[1..];
+            var name = expression.Split('.').Last();
+            if (!constants.TryGetValue(expression, out var resolved)
+                && !constants.TryGetValue(name, out resolved))
             {
                 throw Error(owner, route, $"The component parameter expression '{value}' is not a known compile-time constant.");
             }

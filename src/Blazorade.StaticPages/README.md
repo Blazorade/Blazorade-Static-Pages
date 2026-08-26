@@ -87,6 +87,11 @@ The generator does not execute application code. Values that depend on services,
 
 ## Version highlights
 
+### v1.0.0-preview.12
+
+- Static metadata values can reference standard project constants, including qualified values such as `@Constants.Author`.
+- The source analyzer resolves supported constant aliases and string expressions from project C# files.
+
 ### v1.0.0-preview.11
 
 - Replaced the metadata-bearing `StaticPage` wrapper with `StaticPageAttribute` for page selection and `StaticMetadata` for page metadata.

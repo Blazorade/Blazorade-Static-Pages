@@ -18,7 +18,7 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 - Discover routable components from `@page` directives in `.razor` source files.
 - A page is static only when its markup has a `StaticPageAttribute`.
 - Read `StaticMetadata` values from statically evaluable expressions, not only literal attributes. For example, a title variable initialized from a string literal may be used both as `Title="@title"` and as `@title` in descendant markup.
-- Resolve local constants, fields, and variables whose values can be proven from literals and other statically evaluable expressions. The same resolved value must be used consistently wherever the symbol appears.
+- Resolve local and project constants, fields, and variables whose values can be proven from literals and other statically evaluable expressions, including qualified constants such as `Constants.Author`. The same resolved value must be used consistently wherever the symbol appears.
 - Supported value propagation may include literal strings, numeric and Boolean literals, constant references, string concatenation, and interpolation whose operands are statically evaluable. The supported expression subset must remain explicit and deterministic.
 - Do not execute methods, property getters, lifecycle code, DI, or arbitrary C# to resolve a value. Report expressions that cannot be proven statically instead of guessing or silently omitting them.
 - Only content inside `StaticContent` is included as static HTML. `StaticMetadata` supplies page metadata and does not contribute body markup.
