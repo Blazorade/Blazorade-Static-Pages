@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageId>Blazorade.StaticPages</PackageId>
-		<Version>1.0.0-preview.12</Version>
+		<Version>1.0.0-preview.13</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Copyright>Copyright (c) Mika Berglund 2026</Copyright>
 		<RepositoryType>git</RepositoryType>
@@ -14,6 +14,7 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile>Blazorade.StaticPages.xml</DocumentationFile>
+		<TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddStaticPagesGeneratorToolsToPackage</TargetsForTfmSpecificContentInPackage>
 	</PropertyGroup>
 
 
@@ -28,9 +29,6 @@
 
 	<ItemGroup>
 		<None Include="buildTransitive\Blazorade.StaticPages.targets" Pack="true" PackagePath="buildTransitive\" />
-		<None Include="..\Blazorade.StaticPages.Generator.Host\bin\$(Configuration)\net10.0\**\*" Pack="true" PackagePath="tools\net10.0\">
-			<Visible>false</Visible>
-		</None>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -40,11 +38,19 @@
 	  </None>
 	</ItemGroup>
 
-	<Target Name="BuildStaticPagesGeneratorHost" BeforeTargets="Build;Pack">
+	<Target Name="BuildStaticPagesGeneratorHost" BeforeTargets="Build">
 		<MSBuild
 			Projects="$(MSBuildProjectDirectory)\..\Blazorade.StaticPages.Generator.Host\Blazorade.StaticPages.Generator.Host.csproj"
 			Targets="Build"
 			Properties="Configuration=$(Configuration);NoBuild=false" />
+	</Target>
+
+	<Target Name="AddStaticPagesGeneratorToolsToPackage" DependsOnTargets="BuildStaticPagesGeneratorHost">
+		<ItemGroup>
+			<TfmSpecificPackageFile Include="..\Blazorade.StaticPages.Generator.Host\bin\$(Configuration)\net10.0\**\*">
+				<PackagePath>tools\net10.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+			</TfmSpecificPackageFile>
+		</ItemGroup>
 	</Target>
 
 </Project>

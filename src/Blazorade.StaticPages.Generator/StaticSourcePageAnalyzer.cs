@@ -379,17 +379,32 @@ internal sealed class StaticSourcePageAnalyzer
                     continue;
                 }
 
-                var containingType = field.Ancestors().OfType<TypeDeclarationSyntax>().FirstOrDefault();
-                if (containingType is null)
+                var containingTypes = field.Ancestors().OfType<TypeDeclarationSyntax>().Reverse().ToArray();
+                if (containingTypes.Length == 0)
                 {
                     continue;
                 }
+
+                var typeName = string.Join('.', containingTypes.Select(type => type.Identifier.ValueText));
+                var namespaceName = string.Join('.', field.Ancestors()
+                    .Where(node => node is NamespaceDeclarationSyntax or FileScopedNamespaceDeclarationSyntax)
+                    .Select(node => node switch
+                    {
+                        NamespaceDeclarationSyntax declaration => declaration.Name.ToString(),
+                        FileScopedNamespaceDeclarationSyntax declaration => declaration.Name.ToString(),
+                        _ => string.Empty
+                    })
+                    .Reverse()
+                    .Where(name => name.Length > 0));
+                var qualifiedTypeName = namespaceName.Length > 0 ? $"{namespaceName}.{typeName}" : typeName;
 
                 foreach (var variable in field.Declaration.Variables)
                 {
                     if (variable.Initializer is not null)
                     {
-                        expressions[$"{containingType.Identifier.ValueText}.{variable.Identifier.ValueText}"] = variable.Initializer.Value;
+                        var value = variable.Initializer.Value;
+                        expressions[$"{typeName}.{variable.Identifier.ValueText}"] = value;
+                        expressions[$"{qualifiedTypeName}.{variable.Identifier.ValueText}"] = value;
                     }
                 }
             }

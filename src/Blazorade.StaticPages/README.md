@@ -89,6 +89,11 @@ The generator does not execute application code. Values that depend on services,
 
 ## Version highlights
 
+### v1.0.0-preview.13
+
+- Fixed NuGet packaging so the generator host, generator, and all required build-time dependencies are included under `tools/net10.0`.
+- The build now reports an explicit error when the packaged generator host is missing instead of silently skipping static-page generation.
+
 ### v1.0.0-preview.12
 
 - Static metadata values can reference standard project constants, including qualified values such as `@Constants.Author`.

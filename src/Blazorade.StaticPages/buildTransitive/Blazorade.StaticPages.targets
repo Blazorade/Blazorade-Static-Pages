@@ -4,7 +4,8 @@
     <BlazoradeStaticPagesGeneratedOutput>$(IntermediateOutputPath)Blazorade.StaticPages\generated</BlazoradeStaticPagesGeneratedOutput>
   </PropertyGroup>
 
-  <Target Name="GenerateBlazoradeStaticPages" AfterTargets="Build" Condition="Exists('$(TargetPath)') and Exists('$(BlazoradeStaticPagesGeneratorHost)')">
+  <Target Name="GenerateBlazoradeStaticPages" AfterTargets="Build" Condition="Exists('$(TargetPath)')">
+    <Error Text="The Blazorade.StaticPages generator host was not found at '$(BlazoradeStaticPagesGeneratorHost)'. Reinstall the package with its tools/net10.0 files." Condition="!Exists('$(BlazoradeStaticPagesGeneratorHost)')" />
     <RemoveDir Directories="$(BlazoradeStaticPagesGeneratedOutput)" />
     <Warning Text="No Blazorade Static Pages configuration file was found. Configuration-dependent metadata will be omitted from generated static pages." Condition="!Exists('$(MSBuildProjectDirectory)\blazorade.config.json') and !Exists('$(MSBuildProjectDirectory)\blazorade.config.$(Configuration).json')" />
     <Exec Command="dotnet &quot;$(BlazoradeStaticPagesGeneratorHost)&quot; &quot;$(TargetPath)&quot; &quot;$(BlazoradeStaticPagesGeneratedOutput)&quot; &quot;$(MSBuildProjectDirectory)&quot; &quot;&quot; &quot;$(Configuration)&quot;" CustomWarningRegularExpression="^warning [A-Z0-9]+:" />
