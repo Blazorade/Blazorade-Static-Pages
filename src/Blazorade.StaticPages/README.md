@@ -87,67 +87,20 @@ The `Title` and other static page metadata values must be resolvable at build ti
 
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
-## Version highlights
+## Release notes
 
-### v1.0.0-preview.13
+### v1.0.0-rc.1
 
-- Fixed NuGet packaging so the generator host, generator, and all required build-time dependencies are included under `tools/net10.0`.
-- The build now reports an explicit error when the packaged generator host is missing instead of silently skipping static-page generation.
+- Generated pages now receive a `<main>` element when neither the HTML template nor static content defines one.
 
-### v1.0.0-preview.12
+## Preview releases
 
-- Static metadata values can reference standard project constants, including qualified values such as `@Constants.Author`.
-- The source analyzer resolves supported constant aliases and string expressions from project C# files.
+Versions `v1.0.0-preview.1` through `v1.0.0-preview.13` established the initial static-page generation contract and build integration:
 
-### v1.0.0-preview.11
-
-- Replaced the metadata-bearing `StaticPage` wrapper with `StaticPageAttribute` for page selection and `StaticMetadata` for page metadata.
-- Static page bodies are now explicitly defined with `StaticContent`; `InteractiveContent` excludes runtime-only descendants from generated HTML.
-- Added optional live metadata rendering through `StaticMetadata.RenderInBrowser`.
-- The generator and generator host are rebuilt automatically before the library is built or packed, ensuring that NuGet packages contain matching runtime and build-time components.
-
-### v1.0.0-preview.10
-
-- Package builds support refreshing the generator dependencies even when packing with `--no-build`.
-
-### v1.0.0-preview.9
-
-- `StaticMetadata.Date` accepts simple date and date/time strings parsed as `DateTimeOffset`.
-- Date values without a time-zone offset are interpreted as UTC.
-- Generated pages include concise `article:published_time` and date metadata.
-
-### v1.0.0-preview.8
-
-- Improved compile-time string expression analysis for static content and metadata.
-- String values can now be resolved from constants and variables, parenthesized expressions, and string concatenation.
-
-### v1.0.0-preview.6
-
-- Added build-configuration-specific configuration files such as `blazorade.config.Debug.json`, `blazorade.config.Release.json`, and `blazorade.config.Pre-Prod.json`.
-- Configuration-specific files are recursively merged over the default `blazorade.config.json` file, with configuration-specific values taking precedence.
-- The active configuration is selected through the normal MSBuild or Visual Studio build configuration.
-
-### v1.0.0-preview.5
-
-- String-initialized variables declared in Razor components or matching `.razor.cs` code-behind files are supported for static content and metadata.
-- Compile-time string values are discovered consistently for components regardless of their source folder.
-
-### v1.0.0-preview.4
-
-- Routable components without `StaticPageAttribute` are ignored.
-- String constants declared in Razor `@code` blocks are supported for static content and metadata.
-
-### v1.0.0-preview.2
-
-- Switched static page generation to source-only Razor analysis without runtime rendering.
-- Removed obsolete runtime static-generation context and HTML marker infrastructure.
-- Removed obsolete runtime and rendering dependencies from the build-time generator.
-- Preserved `RenderInBrowser` for controlling browser-only visibility without affecting generated static output.
-
-### v1.0.0-preview.1
-
-- First published preview of Blazorade Static Pages.
-- Added `StaticPageAttribute`, `StaticMetadata`, `StaticContent`, and `InteractiveContent` static-page primitives.
-- Added build-time static page discovery and HTML generation for Blazor WebAssembly applications.
-- Added page metadata, canonical URL support, sitemap generation, and static-hosting route configuration.
-- Added build and publish integration for generated static output.
+- Added `StaticPageAttribute`, `StaticMetadata`, `StaticContent`, and `InteractiveContent` for explicitly declaring static page output.
+- Added source-only Razor analysis and deterministic compile-time value resolution without executing application code or runtime rendering.
+- Added static page discovery and HTML generation for Blazor WebAssembly applications, including metadata, canonical URLs, sitemap generation, and static-hosting route configuration.
+- Added support for compile-time constants, variables, qualified references, string concatenation, parenthesized expressions, and supported date values in static content and metadata.
+- Added build-configuration-specific configuration files with recursive merging over the default configuration.
+- Added optional live metadata rendering through `StaticMetadata.RenderInBrowser` while keeping generated output independent of browser state.
+- Added automatic generator and generator-host rebuilding and NuGet packaging under `tools/net10.0`.

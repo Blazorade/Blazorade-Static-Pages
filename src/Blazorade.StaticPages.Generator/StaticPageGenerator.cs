@@ -82,8 +82,11 @@ public sealed class StaticPageGenerator
             ? "_framework/blazor.webassembly.js"
             : options.Bootstrapper;
 
+        var appContent = ContainsElement(template, "main") || ContainsElement(staticContent, "main")
+            ? staticContent
+            : WrapInMainElement(staticContent);
         var document = ReplaceElementContent(template, "title", title);
-        document = ReplaceElementContentById(document, "app", staticContent);
+        document = ReplaceElementContentById(document, "app", appContent);
         document = ReplaceBootstrapper(document, bootstrapper);
 
         var metadataMarkup =
@@ -101,6 +104,11 @@ public sealed class StaticPageGenerator
             (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n");
 
         return InsertBeforeClosingTag(document, "head", metadataMarkup);
+    }
+
+    private static string WrapInMainElement(string content)
+    {
+        return $"<main>\n{content}</main>";
     }
 
     private static string ReadHtmlTemplate(string projectDirectory)
@@ -148,6 +156,27 @@ public sealed class StaticPageGenerator
 
         var closingStart = FindMatchingClosingDiv(document, openingEnd);
         return document[..(openingEnd + 1)] + content + document[closingStart..];
+    }
+
+    private static bool ContainsElement(string document, string elementName)
+    {
+        var searchStart = 0;
+        while (true)
+        {
+            var elementStart = document.IndexOf('<' + elementName, searchStart, StringComparison.OrdinalIgnoreCase);
+            if (elementStart < 0)
+            {
+                return false;
+            }
+
+            var nameEnd = elementStart + elementName.Length + 1;
+            if (nameEnd < document.Length && (char.IsWhiteSpace(document[nameEnd]) || document[nameEnd] is '>' or '/'))
+            {
+                return true;
+            }
+
+            searchStart = nameEnd;
+        }
     }
 
     private static int FindMatchingClosingDiv(string document, int openingEnd)
