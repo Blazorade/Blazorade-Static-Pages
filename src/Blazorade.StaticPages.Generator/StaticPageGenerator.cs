@@ -85,7 +85,9 @@ public sealed class StaticPageGenerator
         var appContent = ContainsElement(template, "main") || ContainsElement(staticContent, "main")
             ? staticContent
             : WrapInMainElement(staticContent);
-        var document = ReplaceElementContent(template, "title", title);
+        var document = ContainsElement(template, "title")
+            ? ReplaceElementContent(template, "title", title)
+            : InsertBeforeClosingTag(template, "head", $"    <title>{title}</title>\n");
         document = ReplaceElementContentById(document, "app", appContent);
         document = ReplaceBootstrapper(document, bootstrapper);
 

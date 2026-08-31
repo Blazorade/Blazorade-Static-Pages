@@ -89,6 +89,10 @@ The generator does not execute application code. Values that depend on services,
 
 ## Release notes
 
+### v1.0.0-rc.2
+
+- Generated pages now add a `<title>` element when the application's HTML template does not contain one.
+
 ### v1.0.0-rc.1
 
 - Generated pages now receive a `<main>` element when neither the HTML template nor static content defines one.
