@@ -18,3 +18,7 @@ Add build-time support for applications whose public URLs use trailing slashes, 
 - [ ] Add tests for root, nested, already-normalized, and slash-variant routes.
 - [ ] Update `docs/configuration.md` and `docs/static-generation.md`.
 - [ ] Update the package README and relevant build instructions.
+
+## RSS feed generation
+
+- [ ] Support generating RSS feeds from content used to generate static HTML.
