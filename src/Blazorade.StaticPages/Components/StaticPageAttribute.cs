@@ -10,4 +10,9 @@ public sealed class StaticPageAttribute : Attribute
     /// Gets or sets a value indicating whether the page should be included in the generated sitemap.
     /// </summary>
     public bool IncludeInSitemap { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the page should be included in a generated RSS feed.
+    /// </summary>
+    public bool IncludeInRss { get; set; } = true;
 }

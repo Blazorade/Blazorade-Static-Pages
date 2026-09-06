@@ -45,7 +45,35 @@ Static Pages reads its settings from the `staticPages` section. The `siteUrl` pr
 }
 ```
 
-`siteUrl` must be an absolute URL with a host. It should represent the production URL of the site rather than a local development, staging, or preview URL.
+RSS generation is enabled by default when the `staticPages` section is present. Set `staticPages.rss.enabled` to `false` to explicitly turn feed generation off; it defaults to `true`.
+
+```json
+{
+  "staticPages": {
+    "siteUrl": "https://www.example.com",
+    "rss": {
+      "file": "feed.xml",
+      "route": "/feed",
+      "itemCount": 20,
+      "includeContent": true,
+      "enabled": true
+    }
+  }
+}
+```
+
+### Configuration properties
+
+- `staticPages.siteUrl`: The URL the site will be published to. This is used for resolving the canonical URLs generated in static HTML pages, sitemap locations, and RSS item links. It must be an absolute URL with a host and should represent the production site rather than a local development, staging, or preview URL.
+- `staticPages.rss.file`: The relative path of the physical RSS file generated in the web root. Defaults to `feed.xml`. The path must remain inside the generated web root.
+- `staticPages.rss.route`: The site-relative public route rewritten to the generated RSS file by Static Web Apps. Defaults to `/feed`.
+- `staticPages.rss.itemCount`: The maximum number of dated pages included in the feed. Items are ordered newest-first. Defaults to `20` and must be a positive integer.
+- `staticPages.rss.includeContent`: Whether to include the analyzed `StaticContent` fragment in each item's `content:encoded` element. Defaults to `true`. Interactive content is never included.
+- `staticPages.rss.enabled`: Whether RSS feed generation is enabled. Defaults to `true`.
+- `staticPages.rss.title`: Optional RSS channel title. When omitted, the site host name is used.
+- `staticPages.rss.description`: Optional RSS channel description. When omitted, a description based on the site host name is used.
+
+RSS requires a valid `staticPages.siteUrl`.
 
 Other Blazorade libraries can add their own sections without conflicting with Static Pages:
 

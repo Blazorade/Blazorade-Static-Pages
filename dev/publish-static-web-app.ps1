@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $projectPath = Join-Path $PSScriptRoot 'BlazoradeStaticPagesDev\BlazoradeStaticPagesDev.csproj'
-$publishOutputPath = Join-Path $PSScriptRoot 'BlazoradeStaticPagesDev\bin\Release\net10.0\publish'
+$publishOutputPath = Join-Path $PSScriptRoot 'BlazoradeStaticPagesDev\bin\Debug\net10.0\publish'
 $staticContentPath = Join-Path $publishOutputPath 'wwwroot'
 $staticWebAppUrl = 'https://thankful-coast-04f2b8403.7.azurestaticapps.net/'
 $subscriptionId = '7b9bcb59-8ea7-49a6-8f69-ec8418acab78'
@@ -29,9 +29,9 @@ if (Test-Path -LiteralPath $publishOutputPath) {
     Remove-Item -LiteralPath $publishOutputPath -Recurse -Force
 }
 
-Write-Host 'Publishing BlazoradeStaticPagesDev in Release mode...'
+Write-Host 'Publishing BlazoradeStaticPagesDev in Debug mode...'
 dotnet publish $projectPath `
-    --configuration Release `
+    --configuration Debug `
     --output $publishOutputPath
 
 if ($LASTEXITCODE -ne 0) {

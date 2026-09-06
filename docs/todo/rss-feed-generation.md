@@ -43,8 +43,9 @@ is used to generate static HTML pages.
 	  integer; the default is 20.
 	- `rss.includeContent` controls whether each item includes the complete static
 	  article content in `content:encoded`. The default is `true`.
-- RSS generation is opt-in. No feed is generated when the `rss` configuration object
-	is absent.
+	- `rss.enabled` controls RSS generation. The default is `true`.
+- RSS generation is enabled by default when the `staticPages` configuration section is
+	present. No feed is generated when `rss.enabled` is `false`.
 - Require `staticPages.siteUrl` when RSS is enabled because RSS item links and the
 	channel link must be absolute URLs. Report a clear build error when it is missing or
 	invalid.
@@ -109,4 +110,4 @@ is used to generate static HTML pages.
 - Runtime or externally supplied feed items.
 - Automatic feed discovery markup in generated HTML pages.
 
-- [ ] Support generating RSS feeds from content used to generate static HTML.
+- [x] Support generating RSS feeds from content used to generate static HTML.

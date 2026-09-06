@@ -287,7 +287,18 @@ internal sealed class StaticSourcePageAnalyzer
             throw Error(owner, route, "StaticPageAttribute IncludeInSitemap must be a compile-time true or false value.");
         }
 
-        return new StaticPageAttributeValues(include);
+        var includeInRss = true;
+        match = Regex.Match(declaration, @"IncludeInRss\s*=\s*(?<value>true|false)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        if (match.Success)
+        {
+            includeInRss = bool.Parse(match.Groups["value"].Value);
+        }
+        else if (declaration.Contains("IncludeInRss", StringComparison.Ordinal))
+        {
+            throw Error(owner, route, "StaticPageAttribute IncludeInRss must be a compile-time true or false value.");
+        }
+
+        return new StaticPageAttributeValues(include, includeInRss);
     }
 
     private Dictionary<string, string?> ReadConstants(SourceComponent component)
@@ -555,9 +566,9 @@ internal sealed class StaticSourcePageAnalyzer
     /// <summary>
     /// Represents statically evaluable page metadata.
     /// </summary>
-    internal sealed record StaticPageAttributeValues(bool IncludeInSitemap);
+    internal sealed record StaticPageAttributeValues(bool IncludeInSitemap, bool IncludeInRss);
 
-    internal sealed record StaticPageMetadataValues(string Title, string? Description, string? Author, string? Image, string? Locale, DateTimeOffset? Date, bool IncludeInSitemap)
+    internal sealed record StaticPageMetadataValues(string Title, string? Description, string? Author, string? Image, string? Locale, DateTimeOffset? Date, bool IncludeInSitemap, bool IncludeInRss)
     {
         internal static StaticPageMetadataValues From(IReadOnlyList<MarkupAttribute> attributes, IReadOnlyDictionary<string, string?> constants, StaticPageAttributeValues pageAttribute, SourceComponent owner, string route)
         {
@@ -573,7 +584,7 @@ internal sealed class StaticSourcePageAnalyzer
                 Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata Date value '{dateText}' could not be parsed as a DateTimeOffset.");
             }
 
-            return new(title, Get("Description"), Get("Author"), Get("Image"), Get("Locale"), date, pageAttribute.IncludeInSitemap);
+            return new(title, Get("Description"), Get("Author"), Get("Image"), Get("Locale"), date, pageAttribute.IncludeInSitemap, pageAttribute.IncludeInRss);
         }
     }
 

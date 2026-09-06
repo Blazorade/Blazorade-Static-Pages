@@ -124,6 +124,14 @@ When `staticPages.siteUrl` is configured, the generator creates `sitemap.xml` in
 
 The location is the configured site URL combined with the page route. It is XML-escaped. If the configuration file or site URL is unavailable, no sitemap is created.
 
+## RSS feed
+
+RSS generation is enabled by default when the `staticPages` section is present. Set `staticPages.rss.enabled` to `false` to turn it off. When enabled, the generator writes the configured physical XML file, adds a friendly Static Web Apps rewrite, and advertises the feed in every generated page with a `<link rel="alternate" type="application/rss+xml">` element. The feed is RSS 2.0 with the `content:encoded` namespace. Its channel link uses the configured RSS route, while item links and GUIDs use absolute canonical page URLs.
+
+Only pages with a valid `StaticMetadata.Date` are eligible. Eligible pages are sorted newest-first, limited by `itemCount`, and can be excluded with `IncludeInRss = false` on `StaticPageAttribute`. Every item contains its title, description excerpt, link, GUID, and UTC RFC 822 publication date. When `includeContent` is enabled, the analyzed `StaticContent` fragment is added as CDATA. `InteractiveContent` and runtime data are never included.
+
+The physical feed path must remain inside the generated web root, and the route must be site-relative. Both paths are excluded from navigation fallback so the XML file is served directly.
+
 ## Static Web Apps routing
 
 The generator creates `staticwebapp.config.json` with one explicit rewrite for each generated route, mapping the route to its generated `.html` file. It also adds a navigation fallback to `/index.html`. The fallback exclusions are:
@@ -167,7 +175,7 @@ Mark a routable component with `StaticPageAttribute` and place one `StaticMetada
 </StaticContent>
 ```
 
-`StaticMetadata.Title` is required. `Description`, `Author`, `Image`, `Locale`, and `Date` are optional, but every supplied value must resolve to a compile-time value. `RenderInBrowser` defaults to `true`, controls only live metadata rendering, and does not control build-time extraction. `IncludeInSitemap` belongs to `StaticPageAttribute`.
+`StaticMetadata.Title` is required. `Description`, `Author`, `Image`, `Locale`, and `Date` are optional, but every supplied value must resolve to a compile-time value. `RenderInBrowser` defaults to `true`, controls only live metadata rendering, and does not control build-time extraction. `IncludeInSitemap` and `IncludeInRss` belong to `StaticPageAttribute`.
 
 ### `StaticContent`
 

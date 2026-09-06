@@ -72,6 +72,11 @@
             Gets or sets a value indicating whether the page should be included in the generated sitemap.
             </summary>
         </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticPageAttribute.IncludeInRss">
+            <summary>
+            Gets or sets a value indicating whether the page should be included in a generated RSS feed.
+            </summary>
+        </member>
         <member name="T:Blazorade.StaticPages.StaticGeneration.StaticPageDateParser">
             <summary>
             Parses date values supplied to <see cref="P:Blazorade.StaticPages.Components.StaticMetadata.Date"/>.
