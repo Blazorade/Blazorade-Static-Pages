@@ -50,7 +50,7 @@ Values without a time-zone offset are interpreted as UTC. The generated page con
 
 For reusable components, place the static representation inside `StaticContent`. Runtime-only descendants should be placed inside `InteractiveContent`.
 
-To configure the public site URL used for canonical URLs and sitemap generation, add `blazorade.config.json` next to the consuming application's project file:
+To configure the public site URL used for canonical URLs, sitemap generation, and RSS links, add `blazorade.config.json` next to the consuming application's project file:
 
 ```json
 {
@@ -61,6 +61,21 @@ To configure the public site URL used for canonical URLs and sitemap generation,
 ```
 
 Configuration-specific overrides are supported using the active MSBuild configuration. For example, `blazorade.config.Release.json` overrides `blazorade.config.json` for Release builds, and custom configurations such as `Pre-Prod` use `blazorade.config.Pre-Prod.json`. The files are merged recursively, with values from the configuration-specific file taking precedence.
+
+RSS generation is enabled by default whenever the `staticPages` section is present. The generated feed is available at `/feed` by default, and generated HTML pages advertise it with an RSS discovery link. To disable RSS generation, set `staticPages.rss.enabled` to `false`:
+
+```json
+{
+  "staticPages": {
+    "siteUrl": "https://www.example.com",
+    "rss": {
+      "enabled": false
+    }
+  }
+}
+```
+
+The RSS feed includes dated static pages by default, ordered newest first. Individual pages can be excluded with `IncludeInRss = false` on `StaticPageAttribute`.
 
 ## Static page selection and compile-time values
 
@@ -88,6 +103,12 @@ The `Title` and other static page metadata values must be resolvable at build ti
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.3
+
+- Added default-enabled RSS 2.0 feed generation with opt-out configuration through `staticPages.rss.enabled`.
+- Added RSS metadata, Atom self-link validation support, Static Web Apps routing, and stale feed cleanup.
+- Generated HTML pages now advertise the RSS feed with an alternate RSS link when feed generation is enabled.
 
 ### v1.0.0-rc.2
 
