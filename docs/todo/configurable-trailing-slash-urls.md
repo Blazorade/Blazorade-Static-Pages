@@ -1,6 +1,6 @@
-# TODO
+# Configurable trailing-slash URLs
 
-## Configurable trailing-slash URLs
+**Priority:** 2
 
 Add build-time support for applications whose public URLs use trailing slashes, while preserving the current behavior by default.
 
@@ -18,7 +18,3 @@ Add build-time support for applications whose public URLs use trailing slashes, 
 - [ ] Add tests for root, nested, already-normalized, and slash-variant routes.
 - [ ] Update `docs/configuration.md` and `docs/static-generation.md`.
 - [ ] Update the package README and relevant build instructions.
-
-## RSS feed generation
-
-- [ ] Support generating RSS feeds from content used to generate static HTML.
