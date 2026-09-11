@@ -119,9 +119,10 @@ The generator does not execute application code. Values that depend on services,
 
 ## Release notes
 
-### v1.0.0-rc.7
+### v1.0.0-rc.8
 
 - Added browser-side cleanup of statically generated metadata before live `StaticMetadata` rendering, preventing duplicate and conflicting metadata during client-side navigation.
+- Fixed live title rendering by using `PageTitle`, preventing stale duplicate `<title>` elements during client-side navigation.
 
 ### v1.0.0-rc.6
 
