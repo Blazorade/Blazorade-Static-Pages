@@ -37,6 +37,7 @@ internal static class StaticJsonLdSerializer
         {
             ["@context"] = "https://schema.org",
             ["@type"] = schemaType,
+            ["@id"] = CreateEntityId(url, schemaType),
             ["name"] = title,
             ["description"] = description,
             ["url"] = url,
@@ -46,6 +47,7 @@ internal static class StaticJsonLdSerializer
                 : new Dictionary<string, object?>(StringComparer.Ordinal)
                 {
                     ["@type"] = "Person",
+                    ["@id"] = CreateAuthorId(authorUrl),
                     ["name"] = author,
                     ["url"] = authorUrl
                 },
@@ -61,4 +63,10 @@ internal static class StaticJsonLdSerializer
 
         return JsonSerializer.Serialize(document, SerializerOptions);
     }
+
+    private static string? CreateEntityId(string? url, string schemaType) =>
+        url is null ? null : $"{url}#{schemaType.ToLowerInvariant()}";
+
+    private static string? CreateAuthorId(string? authorUrl) =>
+        authorUrl is null ? null : $"{authorUrl}#person";
 }
