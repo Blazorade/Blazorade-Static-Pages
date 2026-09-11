@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Compile Include="..\Blazorade.StaticPages\StaticGeneration\StaticPageDateParser.cs" Link="StaticPageDateParser.cs" />
+    <Compile Include="..\Blazorade.StaticPages\StaticGeneration\StaticJsonLdSerializer.cs" Link="StaticJsonLdSerializer.cs" />
   </ItemGroup>
 
 </Project>

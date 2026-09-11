@@ -115,8 +115,11 @@ The following table describes every metadata element currently created by the ge
 | `<meta property="og:locale">` | When `Locale` is supplied | `StaticMetadata.Locale` with `-` replaced by `_` |
 | `<meta property="article:published_time">` | When `Date` is supplied and valid | The UTC-normalized date/time in concise ISO 8601 format, such as `2026-08-24T00:00:00Z` |
 | `<meta name="date">` | When `Date` is supplied and valid | The UTC-normalized date in ISO 8601 format, such as `2026-08-24` |
+| `<script type="application/ld+json">` | When `SchemaType` is `WebPage` or `Article` | JSON-LD generated from the page metadata |
 
-`StaticMetadata.Date` accepts a date or date/time string that can be parsed as a `DateTimeOffset`. Values without an explicit time-zone offset are interpreted as UTC, and values with an offset are normalized to UTC. Invalid values produce a build warning and are omitted from generated date metadata. The `date` name is a commonly supported convention for publication dates; `article:published_time` remains the more specific article metadata property. Author, keywords, schema, Open Graph site name, and other metadata are not generated unless they already exist in the application HTML template.
+`StaticMetadata.Date` accepts a date or date/time string that can be parsed as a `DateTimeOffset`. Values without an explicit time-zone offset are interpreted as UTC, and values with an offset are normalized to UTC. Invalid values produce a build warning and are omitted from generated date metadata. The `date` name is a commonly supported convention for publication dates; `article:published_time` remains the more specific article metadata property.
+
+When `SchemaType` is supplied, it must be `WebPage` or `Article`. The generated JSON-LD maps `Title` to `name` and, for `Article`, `headline`; `Description` to `description`; `Author` to a `Person`; `AuthorUrl` to the author's absolute `url`; `Date` to `datePublished`; `Image` to `image`; and the optional `Keywords` and `CopyrightNotice` values to their corresponding Schema.org properties. `AuthorUrl` and relative `Image` values require `staticPages.siteUrl` during static generation so that all JSON-LD URLs are absolute. `CopyrightNotice` can contain the copyright year and holder.
 
 ## Sitemap
 
@@ -175,7 +178,7 @@ Mark a routable component with `StaticPageAttribute` and place one `StaticMetada
 </StaticContent>
 ```
 
-`StaticMetadata.Title` is required. `Description`, `Author`, `Image`, `Locale`, and `Date` are optional, but every supplied value must resolve to a compile-time value. `RenderInBrowser` defaults to `true`, controls only live metadata rendering, and does not control build-time extraction. `IncludeInSitemap` and `IncludeInRss` belong to `StaticPageAttribute`.
+`StaticMetadata.Title` is required. `Description`, `Author`, `AuthorUrl`, `Image`, `Locale`, `Date`, `SchemaType`, `Keywords`, and `CopyrightNotice` are optional, but every supplied value must resolve to a compile-time value. `SchemaType` supports only `WebPage` and `Article`. `RenderInBrowser` defaults to `true`, controls only live metadata rendering, and does not control build-time extraction. `IncludeInSitemap` and `IncludeInRss` belong to `StaticPageAttribute`.
 
 ### `StaticContent`
 

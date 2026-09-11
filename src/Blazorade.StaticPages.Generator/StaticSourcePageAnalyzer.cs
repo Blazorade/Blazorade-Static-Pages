@@ -568,7 +568,19 @@ internal sealed class StaticSourcePageAnalyzer
     /// </summary>
     internal sealed record StaticPageAttributeValues(bool IncludeInSitemap, bool IncludeInRss);
 
-    internal sealed record StaticPageMetadataValues(string Title, string? Description, string? Author, string? Image, string? Locale, DateTimeOffset? Date, bool IncludeInSitemap, bool IncludeInRss)
+    internal sealed record StaticPageMetadataValues(
+        string Title,
+        string? Description,
+        string? Author,
+        string? AuthorUrl,
+        string? Image,
+        string? Locale,
+        DateTimeOffset? Date,
+        string? SchemaType,
+        string? Keywords,
+        string? CopyrightNotice,
+        bool IncludeInSitemap,
+        bool IncludeInRss)
     {
         internal static StaticPageMetadataValues From(IReadOnlyList<MarkupAttribute> attributes, IReadOnlyDictionary<string, string?> constants, StaticPageAttributeValues pageAttribute, SourceComponent owner, string route)
         {
@@ -584,7 +596,25 @@ internal sealed class StaticSourcePageAnalyzer
                 Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata Date value '{dateText}' could not be parsed as a DateTimeOffset.");
             }
 
-            return new(title, Get("Description"), Get("Author"), Get("Image"), Get("Locale"), date, pageAttribute.IncludeInSitemap, pageAttribute.IncludeInRss);
+            var schemaType = Get("SchemaType");
+            if (schemaType is not null && !StaticJsonLdSerializer.IsSupportedSchemaType(schemaType))
+            {
+                throw Error(owner, route, $"The StaticMetadata SchemaType '{schemaType}' is not supported. Supported values are 'WebPage' and 'Article'.");
+            }
+
+            return new(
+                title,
+                Get("Description"),
+                Get("Author"),
+                Get("AuthorUrl"),
+                Get("Image"),
+                Get("Locale"),
+                date,
+                schemaType,
+                Get("Keywords"),
+                Get("CopyrightNotice"),
+                pageAttribute.IncludeInSitemap,
+                pageAttribute.IncludeInRss);
         }
     }
 

@@ -21,6 +21,10 @@ The supported `StaticMetadata` parameters and their output are:
 - `Image`: `og:image` and `twitter:image` when non-null.
 - `Locale`: `og:locale` when non-null; replace hyphens with underscores.
 - `Date`: `article:published_time` when non-null; convert to UTC and use round-trip (`O`) formatting.
+- `SchemaType`: optional JSON-LD type; currently `WebPage` or `Article`.
+- `AuthorUrl`: optional author URL used by JSON-LD and resolved to an absolute URL.
+- `Keywords`: optional JSON-LD `keywords` value.
+- `CopyrightNotice`: optional JSON-LD `copyrightNotice` value.
 - `RenderInBrowser`: live metadata rendering only; it does not affect generated output.
 - Every page produces `og:type=website` and `twitter:card=summary_large_image`.
 - A canonical link and `og:url` are produced when a canonical URL is available.

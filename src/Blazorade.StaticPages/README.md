@@ -7,7 +7,7 @@ The application remains the source of truth. Static pages are declared with a so
 Read [Adding static page generation to Blazor WebAssembly](https://mikaberglund.com/add-static-page-generation-to-blazor-webassembly/) for an introduction to using the library.
 
 - `StaticPageAttribute` identifies a static page and controls sitemap and RSS inclusion.
-- `StaticMetadata` defines the page metadata used for generated HTML and optional live browser rendering.
+- `StaticMetadata` defines the page metadata used for generated HTML, optional JSON-LD structured data, and optional live browser rendering.
 - `StaticContent` exposes a safe static representation from a reusable component.
 - `InteractiveContent` excludes runtime-only content from generated HTML while leaving it available to the running application.
 
@@ -47,6 +47,21 @@ The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
 ```
 
 Values without a time-zone offset are interpreted as UTC. The generated page contains a concise `article:published_time` value and a date-only `<meta name="date">` value. Invalid date values produce a build warning and are omitted from the generated metadata.
+
+Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
+
+```razor
+<StaticMetadata
+  Title="Products"
+  Description="Explore our products."
+  SchemaType="WebPage"
+  Author="Mika Berglund"
+  AuthorUrl="https://www.example.com/about"
+  Keywords="products, catalogue"
+  CopyrightNotice="Copyright 2026 Example" />
+```
+
+Relative author and image URLs require `staticPages.siteUrl` so the generated JSON-LD can use absolute URLs. `Article` additionally emits `headline` from `Title`.
 
 For reusable components, place the static representation inside `StaticContent`. Runtime-only descendants should be placed inside `InteractiveContent`.
 
@@ -103,6 +118,12 @@ The `Title` and other static page metadata values must be resolvable at build ti
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.4
+
+- Added JSON-LD structured-data generation for live and statically generated pages through `StaticMetadata`.
+- Added support for `WebPage` and `Article` schema types, including authors represented as Schema.org `Person` objects.
+- Added optional author URLs, keywords, and copyright notices to the generated JSON-LD.
 
 ### v1.0.0-rc.3
 

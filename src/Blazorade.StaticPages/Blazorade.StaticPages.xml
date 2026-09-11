@@ -40,6 +40,11 @@
             Gets or sets the optional page author.
             </summary>
         </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.AuthorUrl">
+            <summary>
+            Gets or sets an optional absolute or page-relative URL for the author.
+            </summary>
+        </member>
         <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Date">
             <summary>
             Gets or sets the optional page date.
@@ -54,6 +59,21 @@
         <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Locale">
             <summary>
             Gets or sets the optional page locale in BCP 47 format.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.SchemaType">
+            <summary>
+            Gets or sets the optional Schema.org type to emit as JSON-LD. Supported values are <c>WebPage</c> and <c>Article</c>.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Keywords">
+            <summary>
+            Gets or sets optional keywords for the structured data.
+            </summary>
+        </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.CopyrightNotice">
+            <summary>
+            Gets or sets an optional copyright notice for the structured data.
             </summary>
         </member>
         <member name="P:Blazorade.StaticPages.Components.StaticMetadata.RenderInBrowser">

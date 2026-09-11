@@ -124,6 +124,19 @@ public sealed class StaticPageGenerator
         var rssTitle = configuration?.Rss is { } rss && configuration.SiteUrl is not null
             ? rss.Title ?? new Uri(configuration.SiteUrl).Host
             : null;
+        var structuredData = metadata.SchemaType is null
+            ? null
+            : StaticJsonLdSerializer.Serialize(
+                metadata.SchemaType,
+                metadata.Title,
+                metadata.Description,
+                metadata.Author,
+                ResolveAuthorUrl(metadata.AuthorUrl, canonicalUrl),
+                metadata.Date is { } date ? StaticPageDateParser.FormatPublishedTime(date) : null,
+                ResolveJsonLdImageUrl(metadata.Image, configuration?.SiteUrl),
+                canonicalUrl,
+                metadata.Keywords,
+                metadata.CopyrightNotice);
         var bootstrapper = string.IsNullOrWhiteSpace(options.Bootstrapper)
             ? "_framework/blazor.webassembly.js"
             : options.Bootstrapper;
@@ -148,6 +161,7 @@ public sealed class StaticPageGenerator
             (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
             (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +
             (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\" />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\" />\n") +
+            (structuredData is null ? string.Empty : $"    <script type=\"application/ld+json\">{structuredData}</script>\n") +
             "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
             $"    <meta name=\"twitter:title\" content=\"{title}\" />\n" +
             (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n");
@@ -502,6 +516,42 @@ public sealed class StaticPageGenerator
         return Uri.TryCreate(value, UriKind.Absolute, out _)
             ? value
             : siteUrl is null ? value : new Uri(new Uri(siteUrl), value.TrimStart('/')).ToString();
+    }
+
+    private static string? ResolveAuthorUrl(string? value, string? canonicalUrl)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(value, UriKind.Absolute, out var absolute))
+        {
+            return absolute.AbsoluteUri;
+        }
+
+        if (canonicalUrl is null)
+        {
+            throw new InvalidOperationException("A canonical site URL is required to resolve a relative StaticMetadata AuthorUrl for JSON-LD.");
+        }
+
+        return new Uri(new Uri(canonicalUrl), value).AbsoluteUri;
+    }
+
+    private static string? ResolveJsonLdImageUrl(string? value, string? siteUrl)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        var resolved = ResolveUrl(value, siteUrl);
+        if (!Uri.TryCreate(resolved, UriKind.Absolute, out var absolute))
+        {
+            throw new InvalidOperationException("An absolute site URL is required to resolve a relative StaticMetadata Image for JSON-LD.");
+        }
+
+        return absolute.AbsoluteUri;
     }
 
     private static string EncodeHtml(string? value) => System.Net.WebUtility.HtmlEncode(value ?? string.Empty);

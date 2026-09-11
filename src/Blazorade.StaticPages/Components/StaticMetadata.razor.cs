@@ -31,6 +31,12 @@ public partial class StaticMetadata
     public string? Author { get; set; }
 
     /// <summary>
+    /// Gets or sets an optional absolute or page-relative URL for the author.
+    /// </summary>
+    [Parameter]
+    public string? AuthorUrl { get; set; }
+
+    /// <summary>
     /// Gets or sets the optional page date.
     /// Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
     /// </summary>
@@ -48,6 +54,24 @@ public partial class StaticMetadata
     /// </summary>
     [Parameter]
     public string? Locale { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional Schema.org type to emit as JSON-LD. Supported values are <c>WebPage</c> and <c>Article</c>.
+    /// </summary>
+    [Parameter]
+    public string? SchemaType { get; set; }
+
+    /// <summary>
+    /// Gets or sets optional keywords for the structured data.
+    /// </summary>
+    [Parameter]
+    public string? Keywords { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional copyright notice for the structured data.
+    /// </summary>
+    [Parameter]
+    public string? CopyrightNotice { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the metadata should be rendered in the browser.
@@ -73,4 +97,18 @@ public partial class StaticMetadata
     private string? PublishedDate => ParsedDate is { } date
         ? StaticPageDateParser.FormatDate(date)
         : null;
+
+    private string? StructuredData => SchemaType is null
+        ? null
+        : StaticJsonLdSerializer.Serialize(
+            SchemaType,
+            Title,
+            Description,
+            Author,
+            AuthorUrl is null ? null : new Uri(new Uri(CanonicalUrl), AuthorUrl).AbsoluteUri,
+            PublishedTime,
+            ImageUrl,
+            CanonicalUrl,
+            Keywords,
+            CopyrightNotice);
 }

@@ -21,7 +21,7 @@ The static artifact is the baseline. Runtime enhancement must not be required fo
 
 ### `StaticPageAttribute` and `StaticMetadata`
 
-`StaticPageAttribute` identifies a routable component for static generation. `StaticMetadata` defines the metadata used for generated HTML and optional live browser rendering.
+`StaticPageAttribute` identifies a routable component for static generation. `StaticMetadata` defines the metadata used for generated HTML, optional JSON-LD structured data, and optional live browser rendering.
 
 ```razor
 @page "/products"

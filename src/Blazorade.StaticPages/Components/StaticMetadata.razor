@@ -36,6 +36,11 @@
             <meta name="date" content="@PublishedDate" />
         }
 
+        @if (StructuredData is not null)
+        {
+            <script type="application/ld+json">@((MarkupString)StructuredData)</script>
+        }
+
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="@Title" />
     </HeadContent>
