@@ -48,7 +48,7 @@ The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
 
 Values without a time-zone offset are interpreted as UTC. The generated page contains a concise `article:published_time` value and a date-only `<meta name="date">` value. Invalid date values produce a build warning and are omitted from the generated metadata.
 
-Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. Page and author entities receive stable `@id` values based on their URLs so structured-data consumers can identify the same entities across references. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
+Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. Page and author entities receive stable, host-independent `@id` values based on their URL paths so structured-data consumers can identify the same entities across staging, production, and other hosting environments. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
 
 ```razor
 <StaticMetadata
@@ -119,10 +119,14 @@ The generator does not execute application code. Values that depend on services,
 
 ## Release notes
 
+### v1.0.0-rc.10
+
+- Made generated JSON-LD entity identifiers independent of the hosting environment so staging and production metadata resolve to the same page and author entities.
+
 ### v1.0.0-rc.9
 
 - Added startup cleanup of statically generated metadata before live `StaticMetadata` rendering, preventing duplicate and conflicting metadata during application startup and client-side navigation.
-- Added stable `@id` values to generated JSON-LD page and author entities.
+- Added stable, host-independent `@id` values to generated JSON-LD page and author entities.
 - Fixed live title rendering by using `PageTitle`, preventing stale duplicate `<title>` elements during client-side navigation.
 
 ### v1.0.0-rc.6

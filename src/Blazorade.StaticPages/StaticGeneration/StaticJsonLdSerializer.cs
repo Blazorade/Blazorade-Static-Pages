@@ -65,8 +65,23 @@ internal static class StaticJsonLdSerializer
     }
 
     private static string? CreateEntityId(string? url, string schemaType) =>
-        url is null ? null : $"{url}#{schemaType.ToLowerInvariant()}";
+        CreatePathBasedId(url, schemaType.ToLowerInvariant());
 
     private static string? CreateAuthorId(string? authorUrl) =>
-        authorUrl is null ? null : $"{authorUrl}#person";
+        CreatePathBasedId(authorUrl, "person");
+
+    private static string? CreatePathBasedId(string? url, string fragment)
+    {
+        if (url is null)
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(url, UriKind.Absolute, out var absoluteUrl))
+        {
+            return $"{absoluteUrl.GetComponents(UriComponents.PathAndQuery, UriFormat.UriEscaped)}#{fragment}";
+        }
+
+        return $"{url.TrimEnd('#')}#{fragment}";
+    }
 }
