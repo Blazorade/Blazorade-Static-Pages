@@ -1,12 +1,13 @@
 using Blazorade.StaticPages.StaticGeneration;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Blazorade.StaticPages.Components;
 
 /// <summary>
 /// Defines metadata for a statically generated page and optionally renders the same metadata in the browser.
 /// </summary>
-public partial class StaticMetadata
+public partial class StaticMetadata : IAsyncDisposable
 {
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
@@ -111,4 +112,31 @@ public partial class StaticMetadata
             CanonicalUrl,
             Keywords,
             CopyrightNotice);
+
+    [Inject]
+    private IJSRuntime JavaScript { get; set; } = default!;
+
+    private IJSObjectReference? JavaScriptModule;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        JavaScriptModule = await JavaScript.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Blazorade.StaticPages/staticMetadata.js");
+        await JavaScriptModule.InvokeVoidAsync("removeStaticMetadata");
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (JavaScriptModule is not null)
+        {
+            await JavaScriptModule.DisposeAsync();
+        }
+    }
 }

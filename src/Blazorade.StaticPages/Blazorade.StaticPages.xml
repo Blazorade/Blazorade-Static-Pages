@@ -82,6 +82,9 @@
             Static generation includes the metadata regardless of this value.
             </summary>
         </member>
+        <member name="M:Blazorade.StaticPages.Components.StaticMetadata.OnAfterRenderAsync(System.Boolean)">
+            <inheritdoc />
+        </member>
         <member name="T:Blazorade.StaticPages.Components.StaticPageAttribute">
             <summary>
             Marks a routable component for static page generation.

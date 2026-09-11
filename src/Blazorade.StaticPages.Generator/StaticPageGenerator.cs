@@ -13,6 +13,8 @@ namespace Blazorade.StaticPages.Generator;
 /// </summary>
 public sealed class StaticPageGenerator
 {
+    private const string StaticMetadataMarker = " data-blazorade-static-metadata";
+
     /// <summary>
     /// Generates route files and Static Web Apps configuration for an application assembly.
     /// </summary>
@@ -147,24 +149,25 @@ public sealed class StaticPageGenerator
         var document = ContainsElement(template, "title")
             ? ReplaceElementContent(template, "title", title)
             : InsertBeforeClosingTag(template, "head", $"    <title>{title}</title>\n");
+        document = AddAttributeToFirstElement(document, "title", StaticMetadataMarker);
         document = ReplaceElementContentById(document, "app", appContent);
         document = ReplaceBootstrapper(document, bootstrapper);
 
         var metadataMarkup =
-            (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
-            "    <meta property=\"og:type\" content=\"website\" />\n" +
-            $"    <meta property=\"og:title\" content=\"{title}\" />\n" +
-            (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n") +
-            (metadata.Author is null ? string.Empty : $"    <meta name=\"author\" content=\"{EncodeHtml(metadata.Author)}\" />\n") +
-            (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\" />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\" />\n") +
-            (rssUrl is null ? string.Empty : $"    <link rel=\"alternate\" type=\"application/rss+xml\" title=\"{EncodeHtml(rssTitle!)}\" href=\"{EncodeHtml(rssUrl)}\" />\n") +
-            (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\" />\n") +
-            (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\" />\n") +
-            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\" />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\" />\n") +
-            (structuredData is null ? string.Empty : $"    <script type=\"application/ld+json\">{structuredData}</script>\n") +
-            "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
-            $"    <meta name=\"twitter:title\" content=\"{title}\" />\n" +
-            (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\" />\n");
+            (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n") +
+            $"    <meta property=\"og:type\" content=\"website\"{StaticMetadataMarker} />\n" +
+            $"    <meta property=\"og:title\" content=\"{title}\"{StaticMetadataMarker} />\n" +
+            (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n") +
+            (metadata.Author is null ? string.Empty : $"    <meta name=\"author\" content=\"{EncodeHtml(metadata.Author)}\"{StaticMetadataMarker} />\n") +
+            (canonicalUrl is null ? string.Empty : $"    <link rel=\"canonical\" href=\"{EncodeHtml(canonicalUrl)}\"{StaticMetadataMarker} />\n    <meta property=\"og:url\" content=\"{EncodeHtml(canonicalUrl)}\"{StaticMetadataMarker} />\n") +
+            (rssUrl is null ? string.Empty : $"    <link rel=\"alternate\" type=\"application/rss+xml\" title=\"{EncodeHtml(rssTitle!)}\" href=\"{EncodeHtml(rssUrl)}\"{StaticMetadataMarker} />\n") +
+            (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n") +
+            (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\"{StaticMetadataMarker} />\n") +
+            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\"{StaticMetadataMarker} />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\"{StaticMetadataMarker} />\n") +
+            (structuredData is null ? string.Empty : $"    <script type=\"application/ld+json\"{StaticMetadataMarker}>{structuredData}</script>\n") +
+            $"    <meta name=\"twitter:card\" content=\"summary_large_image\"{StaticMetadataMarker} />\n" +
+            $"    <meta name=\"twitter:title\" content=\"{title}\"{StaticMetadataMarker} />\n" +
+            (metadata.Description is null ? string.Empty : $"    <meta name=\"twitter:description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n");
 
         return InsertBeforeClosingTag(document, "head", metadataMarkup);
     }
@@ -201,6 +204,23 @@ public sealed class StaticPageGenerator
         }
 
         return document[..(openingEnd + 1)] + content + document[closingStart..];
+    }
+
+    private static string AddAttributeToFirstElement(string document, string elementName, string attribute)
+    {
+        var openingStart = document.IndexOf($"<{elementName}", StringComparison.OrdinalIgnoreCase);
+        if (openingStart < 0)
+        {
+            return document;
+        }
+
+        var openingEnd = document.IndexOf('>', openingStart);
+        if (openingEnd < 0)
+        {
+            throw new InvalidOperationException($"The document contains an incomplete <{elementName}> element.");
+        }
+
+        return document[..openingEnd] + attribute + document[openingEnd..];
     }
 
     private static string ReplaceElementContentById(string document, string id, string content)
