@@ -119,7 +119,7 @@ The generator does not execute application code. Values that depend on services,
 
 ## Release notes
 
-### v1.0.0-rc.4
+### v1.0.0-rc.6
 
 - Added JSON-LD structured-data generation for live and statically generated pages through `StaticMetadata`.
 - Added support for `WebPage` and `Article` schema types, including authors represented as Schema.org `Person` objects.
