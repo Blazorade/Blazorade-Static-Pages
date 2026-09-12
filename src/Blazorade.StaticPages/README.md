@@ -115,9 +115,15 @@ The `Title` and other static page metadata values must be resolvable at build ti
 </StaticContent>
 ```
 
+Compile-time Razor expressions used in HTML attribute values are resolved during static generation.
+
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.11
+
+- Fixed static generation of compile-time Razor expressions used in HTML attribute values, including image URLs in generated HTML and RSS content.
 
 ### v1.0.0-rc.10
 

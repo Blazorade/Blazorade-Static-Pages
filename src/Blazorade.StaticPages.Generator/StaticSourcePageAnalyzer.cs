@@ -151,12 +151,30 @@ internal sealed class StaticSourcePageAnalyzer
                 continue;
             }
 
-            output.Append(node.OpenTag);
+            output.Append(RenderOpenTag(node, context, owner, route));
             output.Append(RenderChildren(node.Children, context, owner, route, pageRoot));
             output.Append(node.CloseTag);
         }
 
         return output.ToString();
+    }
+
+    private static string RenderOpenTag(MarkupNode node, RenderContext context, SourceComponent owner, string route)
+    {
+        if (node.Attributes.All(attribute => attribute.Value is null || !attribute.Value.StartsWith('@')))
+        {
+            return node.OpenTag;
+        }
+
+        var output = node.OpenTag;
+        foreach (var attribute in node.Attributes.Where(attribute => attribute.Value?.StartsWith('@') == true).OrderByDescending(attribute => attribute.ValueStart))
+        {
+            var resolved = Evaluate(attribute.Value, context.Values, owner, route);
+            output = output.Remove(attribute.ValueStart, attribute.ValueEnd - attribute.ValueStart)
+                .Insert(attribute.ValueStart, System.Net.WebUtility.HtmlEncode(resolved ?? string.Empty));
+        }
+
+        return output;
     }
 
     private static IEnumerable<MarkupNode> FindStaticContentRegions(IEnumerable<MarkupNode> nodes)
@@ -633,7 +651,7 @@ internal sealed class StaticSourcePageAnalyzer
         public bool IsElement(string name) => Kind == MarkupNodeKind.Element && string.Equals(Name, name, StringComparison.OrdinalIgnoreCase);
     }
 
-    internal sealed record MarkupAttribute(string Name, string? Value);
+    internal sealed record MarkupAttribute(string Name, string? Value, int ValueStart = -1, int ValueEnd = -1);
 
     private sealed record RazorDocument(List<MarkupNode> Children);
 
@@ -766,13 +784,18 @@ internal sealed class StaticSourcePageAnalyzer
                         var valueStart = position;
                         while (position < tag.Length - 1 && tag[position] != quote) position++;
                         value = tag[valueStart..position];
+                        var valueEnd = position;
                         if (position < tag.Length - 1) position++;
+                        if (name.Length > 0) yield return new MarkupAttribute(name, value, valueStart, valueEnd);
+                        continue;
                     }
                     else
                     {
                         var valueStart = position;
                         while (position < tag.Length - 1 && !char.IsWhiteSpace(tag[position]) && tag[position] != '>') position++;
                         value = tag[valueStart..position];
+                        if (name.Length > 0) yield return new MarkupAttribute(name, value, valueStart, position);
+                        continue;
                     }
                 }
 
