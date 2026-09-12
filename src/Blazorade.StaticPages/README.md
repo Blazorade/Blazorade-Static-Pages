@@ -92,6 +92,8 @@ RSS generation is enabled by default whenever the `staticPages` section is prese
 
 The RSS feed includes dated static pages by default, ordered newest first. Individual pages can be excluded with `IncludeInRss = false` on `StaticPageAttribute`.
 
+Navigation fallback is disabled by default. Set `staticPages.navigationFallback` to `true` to rewrite unmatched navigation requests to `/index.html`. An application-owned static 404 page can be configured with `staticPages.notFoundPage`, relative to the application's `wwwroot`; the generated Static Web Apps configuration then serves it with HTTP status `404`.
+
 ## Static page selection and compile-time values
 
 Only routable components marked with `@attribute [StaticPage]` are included in static page generation. Each static routable component must contain exactly one `StaticMetadata` component. Other routable components remain normal interactive Blazor pages and are ignored by the generator. It is valid for an application to have no static pages.
@@ -120,6 +122,11 @@ Compile-time Razor expressions used in HTML attribute values are resolved during
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.12
+
+- Added opt-in Static Web Apps navigation fallback configuration, disabled by default.
+- Added support for application-owned static 404 pages with preserved HTTP 404 responses.
 
 ### v1.0.0-rc.11
 

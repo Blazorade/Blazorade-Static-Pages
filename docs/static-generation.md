@@ -137,7 +137,7 @@ The physical feed path must remain inside the generated web root, and the route 
 
 ## Static Web Apps routing
 
-The generator creates `staticwebapp.config.json` with one explicit rewrite for each generated route, mapping the route to its generated `.html` file. It also adds a navigation fallback to `/index.html`. The fallback exclusions are:
+The generator creates `staticwebapp.config.json` with one explicit rewrite for each generated route, mapping the route to its generated `.html` file. Navigation fallback is disabled by default and can be enabled with `staticPages.navigationFallback`. When enabled, it rewrites otherwise-unmatched navigation requests to `/index.html`. The fallback exclusions are:
 
 ```text
 /*.html
@@ -153,6 +153,8 @@ The generator creates `staticwebapp.config.json` with one explicit rewrite for e
 /_content/*
 /_framework/*
 ```
+
+Applications can configure an application-owned static 404 page with `staticPages.notFoundPage`, relative to `wwwroot`. The generator adds a `404` response override for the configured file and preserves the HTTP `404` status. The page is supplied by the application and is not included in the Static Pages library.
 
 During publish, the generated files are copied again after the publish output is finalized. If the published Blazor bootstrapper has a fingerprinted filename, the build integration also copies it to `_framework/blazor.webassembly.js` (and the fingerprinted .NET bootstrapper to `_framework/dotnet.js`) so the generated documents can use stable script paths.
 

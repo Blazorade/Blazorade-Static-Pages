@@ -44,7 +44,7 @@ public sealed class StaticPageGenerator
 
         File.WriteAllText(
             Path.Combine(options.OutputDirectory, "staticwebapp.config.json"),
-            CreateStaticWebAppsConfiguration(pages, configuration?.Rss),
+            CreateStaticWebAppsConfiguration(pages, configuration),
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 
         if (configuration?.SiteUrl is not null)
@@ -401,23 +401,31 @@ public sealed class StaticPageGenerator
         return $"<![CDATA[{safeContent}]]>";
     }
 
-    private static string CreateStaticWebAppsConfiguration(IReadOnlyCollection<StaticPageInfo> pages, RssConfiguration? rss)
+    private static string CreateStaticWebAppsConfiguration(IReadOnlyCollection<StaticPageInfo> pages, StaticPagesConfiguration? configuration)
     {
         var routes = pages.Select(page => new StaticWebAppsRoute(page.Route, "/" + page.FilePath)).ToList();
-        if (rss is not null)
+        if (configuration?.Rss is { } rss)
         {
             routes.Add(new StaticWebAppsRoute(rss.Route, "/" + rss.File));
         }
-        var configuration = new StaticWebAppsConfiguration(routes);
-        if (rss is not null)
+        var staticWebAppsConfiguration = new StaticWebAppsConfiguration(
+            routes,
+            configuration?.NavigationFallback == true ? new() : null,
+            configuration?.NotFoundPage is null
+                ? null
+                : new Dictionary<string, StaticWebAppsResponseOverride>
+                {
+                    ["404"] = new("/" + configuration.NotFoundPage, 404)
+                });
+        if (configuration?.Rss is not null && staticWebAppsConfiguration.NavigationFallback is not null)
         {
-            configuration.NavigationFallback.Exclude = configuration.NavigationFallback.Exclude
-                .Concat([rss.Route, "/" + rss.File])
+            staticWebAppsConfiguration.NavigationFallback.Exclude = staticWebAppsConfiguration.NavigationFallback.Exclude
+                .Concat([configuration.Rss.Route, "/" + configuration.Rss.File])
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
 
-        return JsonSerializer.Serialize(configuration, new JsonSerializerOptions
+        return JsonSerializer.Serialize(staticWebAppsConfiguration, new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -470,6 +478,8 @@ public sealed class StaticPageGenerator
         var staticPages = deserialized?.StaticPages;
         var siteUrl = staticPages?.SiteUrl;
         var configuredRss = staticPages is null ? null : staticPages.Rss ?? new RssSection();
+        var navigationFallback = staticPages?.NavigationFallback ?? false;
+        var notFoundPage = ValidateNotFoundPage(staticPages?.NotFoundPage, paths[^1], projectDirectory);
         RssConfiguration? rss = null;
         if (configuredRss is not null && configuredRss.Enabled)
         {
@@ -482,7 +492,7 @@ public sealed class StaticPageGenerator
         }
         if (string.IsNullOrWhiteSpace(siteUrl))
         {
-            return new StaticPagesConfiguration(null, rss);
+            return new StaticPagesConfiguration(null, rss, navigationFallback, notFoundPage);
         }
 
         if (!Uri.TryCreate(siteUrl, UriKind.Absolute, out var uri) || string.IsNullOrWhiteSpace(uri.Host))
@@ -490,7 +500,29 @@ public sealed class StaticPageGenerator
             throw new InvalidOperationException($"The 'staticPages.siteUrl' value in '{paths[^1]}' must be an absolute URL with a host.");
         }
 
-        return new StaticPagesConfiguration(uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/", rss);
+        return new StaticPagesConfiguration(uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/", rss, navigationFallback, notFoundPage);
+    }
+
+    private static string? ValidateNotFoundPage(string? configuredPage, string path, string projectDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPage))
+        {
+            return null;
+        }
+
+        var page = configuredPage.Replace('\\', '/').Trim().TrimStart('/');
+        if (string.IsNullOrWhiteSpace(page) || page.Split('/').Any(part => part is "" or "." or ".."))
+        {
+            throw new InvalidOperationException($"The 'staticPages.notFoundPage' value in '{path}' must be a relative path within the application's wwwroot.");
+        }
+
+        var sourcePath = Path.Combine(projectDirectory, "wwwroot", page.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(sourcePath))
+        {
+            throw new InvalidOperationException($"The configured 'staticPages.notFoundPage' file '{configuredPage}' was not found in the application's wwwroot.");
+        }
+
+        return page;
     }
 
     private static RssConfiguration ValidateRss(RssSection rss, string path)
@@ -580,11 +612,11 @@ public sealed class StaticPageGenerator
 
     private sealed record StaticPageInfo(string Route, string FilePath, string PageName, string Content, StaticSourcePageAnalyzer.StaticPageMetadataValues Metadata);
 
-    private sealed record StaticPagesConfiguration(string? SiteUrl, RssConfiguration? Rss);
+    private sealed record StaticPagesConfiguration(string? SiteUrl, RssConfiguration? Rss, bool NavigationFallback, string? NotFoundPage);
 
     private sealed record BlazoradeConfiguration(StaticPagesSection? StaticPages);
 
-    private sealed record StaticPagesSection(string? SiteUrl, RssSection? Rss);
+    private sealed record StaticPagesSection(string? SiteUrl, RssSection? Rss, bool? NavigationFallback, string? NotFoundPage);
 
     private sealed class RssSection
     {
@@ -601,12 +633,15 @@ public sealed class StaticPageGenerator
 
     private sealed record StaticWebAppsConfiguration(
         IEnumerable<StaticWebAppsRoute> Routes,
-        StaticWebAppsNavigationFallback NavigationFallback = null!)
+        StaticWebAppsNavigationFallback? NavigationFallback,
+        Dictionary<string, StaticWebAppsResponseOverride>? ResponseOverrides)
     {
-        public StaticWebAppsNavigationFallback NavigationFallback { get; } = NavigationFallback ?? new();
+        public StaticWebAppsNavigationFallback? NavigationFallback { get; } = NavigationFallback;
     }
 
     private sealed record StaticWebAppsRoute(string Route, string Rewrite);
+
+    private sealed record StaticWebAppsResponseOverride(string Rewrite, int StatusCode);
 
     private sealed class StaticWebAppsNavigationFallback
     {

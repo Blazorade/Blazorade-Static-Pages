@@ -39,7 +39,7 @@ applyTo: "src/Blazorade.StaticPages.Generator/**/*.cs,src/Blazorade.StaticPages.
 ## Generated deployment files
 
 - Generate `sitemap.xml` only for pages whose `IncludeInSitemap` value is true.
-- Generate `staticwebapp.config.json` with explicit route rewrites before the navigation fallback.
+- Generate `staticwebapp.config.json` with explicit route rewrites and include a navigation fallback only when configured.
 - Preserve the agreed fallback exclusions for HTML files, assets, `_content`, and `_framework`.
 - Use the configured production `staticPages.siteUrl` for canonical URLs and sitemap locations. Never derive canonical URLs from the browser host.
 
