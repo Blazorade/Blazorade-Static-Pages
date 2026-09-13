@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Blazorade.StaticPages.StaticGeneration;
 
@@ -14,6 +15,9 @@ namespace Blazorade.StaticPages.Generator;
 public sealed class StaticPageGenerator
 {
     private const string StaticMetadataMarker = " data-blazorade-static-metadata";
+    private static readonly Regex FeedUrlAttributePattern = new(
+        "(?<prefix>\\b(?:href|src)\\s*=\\s*)(?<quote>[\\\"'])(?<value>[^\\\"']*)(\\k<quote>)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Generates route files and Static Web Apps configuration for an application assembly.
@@ -383,7 +387,7 @@ public sealed class StaticPageGenerator
                 if (rss.IncludeContent)
                 {
                     writer.WriteStartElement("content", "encoded", "http://purl.org/rss/1.0/modules/content/");
-                    writer.WriteRaw(CreateCData(page.Content));
+                    writer.WriteRaw(CreateCData(ResolveFeedContentUrls(page.Content, link)));
                     writer.WriteEndElement();
                 }
 
@@ -395,6 +399,28 @@ public sealed class StaticPageGenerator
         }
 
         return $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n{builder}";
+    }
+
+    private static string ResolveFeedContentUrls(string content, string pageUrl)
+    {
+        return FeedUrlAttributePattern.Replace(content, match =>
+        {
+            var value = System.Net.WebUtility.HtmlDecode(match.Groups["value"].Value);
+            var resolved = ResolveFeedUrl(value, pageUrl);
+            return match.Groups["prefix"].Value + match.Groups["quote"].Value + EncodeHtml(resolved) + match.Groups["quote"].Value;
+        });
+    }
+
+    private static string ResolveFeedUrl(string value, string pageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.StartsWith('#') || Uri.TryCreate(value, UriKind.Absolute, out _))
+        {
+            return value;
+        }
+
+        return Uri.TryCreate(new Uri(pageUrl), value, out var resolved)
+            ? resolved.AbsoluteUri
+            : value;
     }
 
     private static string CreateCData(string content)
