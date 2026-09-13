@@ -55,7 +55,14 @@ public sealed class StaticPageGenerator
         {
             var sitemapPages = pages
                 .Where(page => page.Metadata?.IncludeInSitemap != false)
-                .Select(page => $"<url><loc>{EncodeXml(new Uri(new Uri(configuration.SiteUrl), page.Route.TrimStart('/')).ToString())}</loc></url>");
+                .Select(page =>
+                {
+                    var location = EncodeXml(new Uri(new Uri(configuration.SiteUrl), page.Route.TrimStart('/')).ToString());
+                    var lastModified = page.Metadata?.DateModified is { } dateModified
+                        ? $"<lastmod>{EncodeXml(StaticPageDateParser.FormatPublishedTime(dateModified))}</lastmod>"
+                        : string.Empty;
+                    return $"<url><loc>{location}</loc>{lastModified}</url>";
+                });
             File.WriteAllText(
                 Path.Combine(options.OutputDirectory, "sitemap.xml"),
                 $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">{string.Concat(sitemapPages)}</urlset>\n",
@@ -139,6 +146,7 @@ public sealed class StaticPageGenerator
                 metadata.Author,
                 ResolveAuthorUrl(metadata.AuthorUrl, canonicalUrl),
                 metadata.Date is { } date ? StaticPageDateParser.FormatPublishedTime(date) : null,
+                metadata.DateModified is { } dateModified ? StaticPageDateParser.FormatPublishedTime(dateModified) : null,
                 ResolveJsonLdImageUrl(metadata.Image, configuration?.SiteUrl),
                 canonicalUrl,
                 metadata.Keywords,
@@ -170,6 +178,7 @@ public sealed class StaticPageGenerator
             (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n") +
             (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\"{StaticMetadataMarker} />\n") +
             (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\"{StaticMetadataMarker} />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\"{StaticMetadataMarker} />\n") +
+            (metadata.DateModified is null ? string.Empty : $"    <meta property=\"article:modified_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.DateModified.Value)}\"{StaticMetadataMarker} />\n") +
             (structuredData is null ? string.Empty : $"    <script type=\"application/ld+json\"{StaticMetadataMarker}>{structuredData}</script>\n") +
             $"    <meta name=\"twitter:card\" content=\"summary_large_image\"{StaticMetadataMarker} />\n" +
             $"    <meta name=\"twitter:title\" content=\"{title}\"{StaticMetadataMarker} />\n" +
@@ -383,6 +392,11 @@ public sealed class StaticPageGenerator
                 writer.WriteString(link);
                 writer.WriteEndElement();
                 writer.WriteElementString("pubDate", publicationDate);
+
+                    if (page.Metadata.DateModified is { } dateModified)
+                    {
+                        writer.WriteElementString("atom", "updated", "http://www.w3.org/2005/Atom", dateModified.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture));
+                    }
 
                 if (rss.IncludeContent)
                 {

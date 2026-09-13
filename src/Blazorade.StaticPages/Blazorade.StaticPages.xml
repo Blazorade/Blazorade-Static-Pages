@@ -51,6 +51,12 @@
             Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
             </summary>
         </member>
+        <member name="P:Blazorade.StaticPages.Components.StaticMetadata.DateModified">
+            <summary>
+            Gets or sets the optional page modification date.
+            Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
+            </summary>
+        </member>
         <member name="P:Blazorade.StaticPages.Components.StaticMetadata.Image">
             <summary>
             Gets or sets the optional page image URL.

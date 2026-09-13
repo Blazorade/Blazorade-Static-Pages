@@ -48,6 +48,17 @@ The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
 
 Values without a time-zone offset are interpreted as UTC. The generated page contains a concise `article:published_time` value and a date-only `<meta name="date">` value. Invalid date values produce a build warning and are omitted from the generated metadata.
 
+The optional `DateModified` parameter accepts a value parseable as a `DateTimeOffset` and represents the genuine modification date of the page:
+
+```razor
+<StaticMetadata
+  Title="Products"
+  Date="2026-05-10T14:30:00+02:00"
+  DateModified="2026-09-13T10:15:00+02:00" />
+```
+
+When supplied, the modification date is emitted as `article:modified_time`, `dateModified` in Article JSON-LD, sitemap `<lastmod>`, and RSS Atom `<atom:updated>` metadata. Invalid values produce a build warning and are omitted. The original publication date remains in `Date` and RSS `pubDate`.
+
 Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. `SchemaType="Article"` also produces `og:type="article"`; other pages produce `og:type="website"`. Page and author entities receive stable, host-independent `@id` values based on their URL paths so structured-data consumers can identify the same entities across staging, production, and other hosting environments. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
 
 ```razor
@@ -122,6 +133,10 @@ Compile-time Razor expressions used in HTML attribute values are resolved during
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.16
+
+- Added optional `StaticMetadata.DateModified` support for live and generated metadata, Article JSON-LD, sitemap `<lastmod>`, and RSS Atom `<atom:updated>` values.
 
 ### v1.0.0-rc.15
 

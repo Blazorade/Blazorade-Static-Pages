@@ -594,6 +594,7 @@ internal sealed class StaticSourcePageAnalyzer
         string? Image,
         string? Locale,
         DateTimeOffset? Date,
+        DateTimeOffset? DateModified,
         string? SchemaType,
         string? Keywords,
         string? CopyrightNotice,
@@ -614,6 +615,13 @@ internal sealed class StaticSourcePageAnalyzer
                 Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata Date value '{dateText}' could not be parsed as a DateTimeOffset.");
             }
 
+            var dateModifiedText = Get("DateModified");
+            DateTimeOffset? dateModified = null;
+            if (!string.IsNullOrWhiteSpace(dateModifiedText) && !StaticPageDateParser.TryParse(dateModifiedText, out dateModified))
+            {
+                Console.Error.WriteLine($"warning BLZ002: {owner.Path} ({route}): The StaticMetadata DateModified value '{dateModifiedText}' could not be parsed as a DateTimeOffset.");
+            }
+
             var schemaType = Get("SchemaType");
             if (schemaType is not null && !StaticJsonLdSerializer.IsSupportedSchemaType(schemaType))
             {
@@ -628,6 +636,7 @@ internal sealed class StaticSourcePageAnalyzer
                 Get("Image"),
                 Get("Locale"),
                 date,
+                dateModified,
                 schemaType,
                 Get("Keywords"),
                 Get("CopyrightNotice"),

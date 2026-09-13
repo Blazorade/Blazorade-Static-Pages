@@ -23,6 +23,7 @@ internal static class StaticJsonLdSerializer
         string? author,
         string? authorUrl,
         string? datePublished,
+        string? dateModified,
         string? image,
         string? url,
         string? keywords,
@@ -52,6 +53,7 @@ internal static class StaticJsonLdSerializer
                     ["url"] = authorUrl
                 },
             ["datePublished"] = datePublished,
+            ["dateModified"] = dateModified,
             ["keywords"] = keywords,
             ["copyrightNotice"] = copyrightNotice
         };
