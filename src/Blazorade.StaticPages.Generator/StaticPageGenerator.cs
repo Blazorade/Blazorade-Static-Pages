@@ -154,6 +154,7 @@ public sealed class StaticPageGenerator
         document = ReplaceBootstrapper(document, bootstrapper);
 
         var metadataMarkup =
+            (configuration?.NoIndex == true ? $"    <meta name=\"robots\" content=\"noindex, nofollow\"{StaticMetadataMarker} />\n" : string.Empty) +
             (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n") +
             $"    <meta property=\"og:type\" content=\"website\"{StaticMetadataMarker} />\n" +
             $"    <meta property=\"og:title\" content=\"{title}\"{StaticMetadataMarker} />\n" +
@@ -479,6 +480,7 @@ public sealed class StaticPageGenerator
         var siteUrl = staticPages?.SiteUrl;
         var configuredRss = staticPages is null ? null : staticPages.Rss ?? new RssSection();
         var navigationFallback = staticPages?.NavigationFallback ?? false;
+        var noIndex = staticPages?.NoIndex ?? false;
         var notFoundPage = ValidateNotFoundPage(staticPages?.NotFoundPage, paths[^1], projectDirectory);
         RssConfiguration? rss = null;
         if (configuredRss is not null && configuredRss.Enabled)
@@ -492,7 +494,7 @@ public sealed class StaticPageGenerator
         }
         if (string.IsNullOrWhiteSpace(siteUrl))
         {
-            return new StaticPagesConfiguration(null, rss, navigationFallback, notFoundPage);
+            return new StaticPagesConfiguration(null, rss, navigationFallback, notFoundPage, noIndex);
         }
 
         if (!Uri.TryCreate(siteUrl, UriKind.Absolute, out var uri) || string.IsNullOrWhiteSpace(uri.Host))
@@ -500,7 +502,7 @@ public sealed class StaticPageGenerator
             throw new InvalidOperationException($"The 'staticPages.siteUrl' value in '{paths[^1]}' must be an absolute URL with a host.");
         }
 
-        return new StaticPagesConfiguration(uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/", rss, navigationFallback, notFoundPage);
+        return new StaticPagesConfiguration(uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/", rss, navigationFallback, notFoundPage, noIndex);
     }
 
     private static string? ValidateNotFoundPage(string? configuredPage, string path, string projectDirectory)
@@ -612,11 +614,11 @@ public sealed class StaticPageGenerator
 
     private sealed record StaticPageInfo(string Route, string FilePath, string PageName, string Content, StaticSourcePageAnalyzer.StaticPageMetadataValues Metadata);
 
-    private sealed record StaticPagesConfiguration(string? SiteUrl, RssConfiguration? Rss, bool NavigationFallback, string? NotFoundPage);
+    private sealed record StaticPagesConfiguration(string? SiteUrl, RssConfiguration? Rss, bool NavigationFallback, string? NotFoundPage, bool NoIndex);
 
     private sealed record BlazoradeConfiguration(StaticPagesSection? StaticPages);
 
-    private sealed record StaticPagesSection(string? SiteUrl, RssSection? Rss, bool? NavigationFallback, string? NotFoundPage);
+    private sealed record StaticPagesSection(string? SiteUrl, RssSection? Rss, bool? NavigationFallback, string? NotFoundPage, bool? NoIndex);
 
     private sealed class RssSection
     {

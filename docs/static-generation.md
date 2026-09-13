@@ -99,6 +99,7 @@ The following table describes every metadata element currently created by the ge
 
 | Element | Created when | Value source and transformation |
 | --- | --- | --- |
+| `<meta name="robots" content="noindex, nofollow">` | When `staticPages.noIndex` is `true` | Fixed directive preventing indexing and following links; omitted by default |
 | `<title>` | Always | `StaticMetadata.Title` |
 | `<meta property="og:type" content="website">` | Always | Fixed value `website` |
 | `<meta property="og:title">` | Always | `StaticMetadata.Title` |

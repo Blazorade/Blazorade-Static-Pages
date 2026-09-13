@@ -67,6 +67,7 @@ RSS generation is enabled by default when the `staticPages` section is present. 
 - `staticPages.siteUrl`: The URL the site will be published to. This is used for resolving the canonical URLs generated in static HTML pages, sitemap locations, and RSS item links. It must be an absolute URL with a host and should represent the production site rather than a local development, staging, or preview URL.
 - `staticPages.navigationFallback`: Whether to rewrite otherwise-unmatched navigation requests to `/index.html` in the generated Static Web Apps configuration. Defaults to `false`.
 - `staticPages.notFoundPage`: Optional path, relative to the consuming application's `wwwroot`, for an application-owned static 404 page. When configured, the generated Static Web Apps configuration serves that file with HTTP status `404`.
+- `staticPages.noIndex`: Whether to emit a `noindex, nofollow` robots meta element in generated HTML pages. Defaults to `false`, allowing indexing.
 - `staticPages.rss.file`: The relative path of the physical RSS file generated in the web root. Defaults to `feed.xml`. The path must remain inside the generated web root.
 - `staticPages.rss.route`: The site-relative public route rewritten to the generated RSS file by Static Web Apps. Defaults to `/feed`.
 - `staticPages.rss.itemCount`: The maximum number of dated pages included in the feed. Items are ordered newest-first. Defaults to `20` and must be a positive integer.
@@ -154,6 +155,8 @@ An application can provide its own JavaScript-independent 404 page in `wwwroot`,
 ```
 
 The configured file must exist in the consuming application's `wwwroot`. The generator adds a Static Web Apps `404` response override that rewrites to the file while retaining the `404` status. `NotFound.razor` remains useful for client-side routing, but it does not replace the HTTP-level 404 page.
+
+Set `staticPages.noIndex` to `true` for publicly accessible staging or preview deployments. The generated pages then contain a `noindex, nofollow` directive in the initial HTML response. Keep the setting `false` in production.
 
 ## Future configuration
 
