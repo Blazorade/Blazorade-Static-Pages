@@ -48,7 +48,7 @@ The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
 
 Values without a time-zone offset are interpreted as UTC. The generated page contains a concise `article:published_time` value and a date-only `<meta name="date">` value. Invalid date values produce a build warning and are omitted from the generated metadata.
 
-Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. Page and author entities receive stable, host-independent `@id` values based on their URL paths so structured-data consumers can identify the same entities across staging, production, and other hosting environments. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
+Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. `SchemaType="Article"` also produces `og:type="article"`; other pages produce `og:type="website"`. Page and author entities receive stable, host-independent `@id` values based on their URL paths so structured-data consumers can identify the same entities across staging, production, and other hosting environments. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
 
 ```razor
 <StaticMetadata
@@ -122,6 +122,10 @@ Compile-time Razor expressions used in HTML attribute values are resolved during
 The generator does not execute application code. Values that depend on services, lifecycle methods, property getters, authentication state, or other runtime data cannot be used as static metadata or content.
 
 ## Release notes
+
+### v1.0.0-rc.14
+
+- Generated and live Open Graph metadata now uses `og:type="article"` for pages with `SchemaType="Article"`.
 
 ### v1.0.0-rc.13
 

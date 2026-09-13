@@ -3,7 +3,7 @@
     <PageTitle>@Title</PageTitle>
 
     <HeadContent>
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content="@(SchemaType == "Article" ? "article" : "website")" />
         <meta property="og:title" content="@Title" />
         <meta property="og:url" content="@CanonicalUrl" />
         <link rel="canonical" href="@CanonicalUrl" />

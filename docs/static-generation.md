@@ -101,7 +101,7 @@ The following table describes every metadata element currently created by the ge
 | --- | --- | --- |
 | `<meta name="robots" content="noindex, nofollow">` | When `staticPages.noIndex` is `true` | Fixed directive preventing indexing and following links; omitted by default |
 | `<title>` | Always | `StaticMetadata.Title` |
-| `<meta property="og:type" content="website">` | Always | Fixed value `website` |
+| `<meta property="og:type">` | Always | `article` when `StaticMetadata.SchemaType` is `Article`; otherwise `website` |
 | `<meta property="og:title">` | Always | `StaticMetadata.Title` |
 | `<meta name="twitter:card" content="summary_large_image">` | Always | Fixed value `summary_large_image` |
 | `<meta name="twitter:title">` | Always | `StaticMetadata.Title` |

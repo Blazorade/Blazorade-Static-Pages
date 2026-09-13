@@ -26,7 +26,7 @@ The supported `StaticMetadata` parameters and their output are:
 - `Keywords`: optional JSON-LD `keywords` value.
 - `CopyrightNotice`: optional JSON-LD `copyrightNotice` value.
 - `RenderInBrowser`: live metadata rendering only; it does not affect generated output.
-- Every page produces `og:type=website` and `twitter:card=summary_large_image`.
+- Every page produces `og:type=article` when `SchemaType` is `Article`; otherwise it produces `og:type=website`. Every page also produces `twitter:card=summary_large_image`.
 - A canonical link and `og:url` are produced when a canonical URL is available.
 
 The document `<title>` is managed separately from the meta elements, but its value must remain consistent with `StaticMetadata.Title` in generated output. `IncludeInSitemap` belongs to `StaticPageAttribute` and does not produce a head element.

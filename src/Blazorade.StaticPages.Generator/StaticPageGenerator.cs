@@ -153,10 +153,11 @@ public sealed class StaticPageGenerator
         document = ReplaceElementContentById(document, "app", appContent);
         document = ReplaceBootstrapper(document, bootstrapper);
 
+        var openGraphType = metadata.SchemaType == "Article" ? "article" : "website";
         var metadataMarkup =
             (configuration?.NoIndex == true ? $"    <meta name=\"robots\" content=\"noindex, nofollow\"{StaticMetadataMarker} />\n" : string.Empty) +
             (metadata.Description is null ? string.Empty : $"    <meta name=\"description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n") +
-            $"    <meta property=\"og:type\" content=\"website\"{StaticMetadataMarker} />\n" +
+            $"    <meta property=\"og:type\" content=\"{openGraphType}\"{StaticMetadataMarker} />\n" +
             $"    <meta property=\"og:title\" content=\"{title}\"{StaticMetadataMarker} />\n" +
             (metadata.Description is null ? string.Empty : $"    <meta property=\"og:description\" content=\"{EncodeHtml(metadata.Description)}\"{StaticMetadataMarker} />\n") +
             (metadata.Author is null ? string.Empty : $"    <meta name=\"author\" content=\"{EncodeHtml(metadata.Author)}\"{StaticMetadataMarker} />\n") +
