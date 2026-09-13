@@ -55,9 +55,9 @@ is used to generate static HTML pages.
 - Include static pages unless `StaticPageAttribute.IncludeInRss` is explicitly
 	`false`. This is separate from `IncludeInSitemap` because sitemap and RSS audiences
 	have different purposes.
-- Treat the statically generated pages with valid `StaticMetadata.Date` values as posts
+- Treat the statically generated pages with valid `StaticMetadata.DatePublished` values as posts
 	eligible for the feed. Pages without a publication date are not RSS items.
-- Sort eligible posts by their `StaticMetadata.Date` value descending, so the newest
+- Sort eligible posts by their `StaticMetadata.DatePublished` value descending, so the newest
 	posts are first, and take the configured `rss.itemCount` items. The default feed
 	therefore contains the 20 latest dated posts.
 - Use the existing static metadata for the RSS item fields:
@@ -65,7 +65,7 @@ is used to generate static HTML pages.
 	- `description` from `StaticMetadata.Description` when supplied. This excerpt is
 	  always included, regardless of `rss.includeContent`.
 	- `link` and `guid` from the absolute canonical page URL.
-- `pubDate` from the UTC-normalized `StaticMetadata.Date`.
+- `pubDate` from the UTC-normalized `StaticMetadata.DatePublished`.
 
 - Always include the standard RSS item metadata and the excerpt. When
 	`rss.includeContent` is `true`, also emit the complete `StaticContent` fragment

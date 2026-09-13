@@ -20,7 +20,7 @@ The supported `StaticMetadata` parameters and their output are:
 - `Author`: `author` when non-null.
 - `Image`: `og:image` and `twitter:image` when non-null.
 - `Locale`: `og:locale` when non-null; replace hyphens with underscores.
-- `Date`: `article:published_time` when non-null; convert to UTC and use round-trip (`O`) formatting.
+- `DatePublished`: `article:published_time` when non-null; convert to UTC and use round-trip (`O`) formatting.
 - `SchemaType`: optional JSON-LD type; currently `WebPage` or `Article`.
 - `AuthorUrl`: optional author URL used by JSON-LD and resolved to an absolute URL.
 - `Keywords`: optional JSON-LD `keywords` value.

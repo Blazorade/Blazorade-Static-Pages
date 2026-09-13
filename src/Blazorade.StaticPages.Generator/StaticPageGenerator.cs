@@ -145,7 +145,7 @@ public sealed class StaticPageGenerator
                 metadata.Description,
                 metadata.Author,
                 ResolveAuthorUrl(metadata.AuthorUrl, canonicalUrl),
-                metadata.Date is { } date ? StaticPageDateParser.FormatPublishedTime(date) : null,
+                metadata.DatePublished is { } date ? StaticPageDateParser.FormatPublishedTime(date) : null,
                 metadata.DateModified is { } dateModified ? StaticPageDateParser.FormatPublishedTime(dateModified) : null,
                 ResolveJsonLdImageUrl(metadata.Image, configuration?.SiteUrl),
                 canonicalUrl,
@@ -177,7 +177,7 @@ public sealed class StaticPageGenerator
             (rssUrl is null ? string.Empty : $"    <link rel=\"alternate\" type=\"application/rss+xml\" title=\"{EncodeHtml(rssTitle!)}\" href=\"{EncodeHtml(rssUrl)}\"{StaticMetadataMarker} />\n") +
             (metadata.Image is null ? string.Empty : $"    <meta property=\"og:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n    <meta name=\"twitter:image\" content=\"{EncodeHtml(ResolveUrl(metadata.Image, configuration?.SiteUrl))}\"{StaticMetadataMarker} />\n") +
             (metadata.Locale is null ? string.Empty : $"    <meta property=\"og:locale\" content=\"{EncodeHtml(metadata.Locale.Replace('-', '_'))}\"{StaticMetadataMarker} />\n") +
-            (metadata.Date is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.Date.Value)}\"{StaticMetadataMarker} />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.Date.Value)}\"{StaticMetadataMarker} />\n") +
+            (metadata.DatePublished is null ? string.Empty : $"    <meta property=\"article:published_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.DatePublished.Value)}\"{StaticMetadataMarker} />\n    <meta name=\"date\" content=\"{StaticPageDateParser.FormatDate(metadata.DatePublished.Value)}\"{StaticMetadataMarker} />\n") +
             (metadata.DateModified is null ? string.Empty : $"    <meta property=\"article:modified_time\" content=\"{StaticPageDateParser.FormatPublishedTime(metadata.DateModified.Value)}\"{StaticMetadataMarker} />\n") +
             (structuredData is null ? string.Empty : $"    <script type=\"application/ld+json\"{StaticMetadataMarker}>{structuredData}</script>\n") +
             $"    <meta name=\"twitter:card\" content=\"summary_large_image\"{StaticMetadataMarker} />\n" +
@@ -344,8 +344,8 @@ public sealed class StaticPageGenerator
     private static string CreateRssFeed(IReadOnlyCollection<StaticPageInfo> pages, string siteUrl, RssConfiguration rss)
     {
         var items = pages
-            .Where(page => page.Metadata.IncludeInRss && page.Metadata.Date.HasValue)
-            .OrderByDescending(page => page.Metadata.Date)
+            .Where(page => page.Metadata.IncludeInRss && page.Metadata.DatePublished.HasValue)
+            .OrderByDescending(page => page.Metadata.DatePublished)
             .Take(rss.ItemCount)
             .ToArray();
 
@@ -381,7 +381,7 @@ public sealed class StaticPageGenerator
             foreach (var page in items)
             {
                 var link = new Uri(new Uri(siteUrl), page.Route.TrimStart('/')).ToString();
-                var publicationDate = page.Metadata.Date!.Value.ToUniversalTime().ToString("r", CultureInfo.InvariantCulture);
+                var publicationDate = page.Metadata.DatePublished!.Value.ToUniversalTime().ToString("r", CultureInfo.InvariantCulture);
 
                 writer.WriteStartElement("item");
                 writer.WriteElementString("title", page.Metadata.Title);

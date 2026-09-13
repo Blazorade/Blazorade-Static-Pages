@@ -38,11 +38,11 @@ public partial class StaticMetadata : IAsyncDisposable
     public string? AuthorUrl { get; set; }
 
     /// <summary>
-    /// Gets or sets the optional page date.
+    /// Gets or sets the optional page publication date.
     /// Date and time values without an offset are interpreted as UTC. Values with an offset are normalized to UTC.
     /// </summary>
     [Parameter]
-    public string? Date { get; set; }
+    public string? DatePublished { get; set; }
 
     /// <summary>
     /// Gets or sets the optional page modification date.
@@ -96,15 +96,15 @@ public partial class StaticMetadata : IAsyncDisposable
         ? null
         : Navigation.ToAbsoluteUri(Image).AbsoluteUri;
 
-    private DateTimeOffset? ParsedDate => StaticPageDateParser.TryParse(Date, out var date) ? date : null;
+    private DateTimeOffset? ParsedDatePublished => StaticPageDateParser.TryParse(DatePublished, out var date) ? date : null;
 
     private DateTimeOffset? ParsedDateModified => StaticPageDateParser.TryParse(DateModified, out var date) ? date : null;
 
-    private string? PublishedTime => ParsedDate is { } date
+    private string? PublishedTime => ParsedDatePublished is { } date
         ? StaticPageDateParser.FormatPublishedTime(date)
         : null;
 
-    private string? PublishedDate => ParsedDate is { } date
+    private string? PublishedDate => ParsedDatePublished is { } date
         ? StaticPageDateParser.FormatDate(date)
         : null;
 

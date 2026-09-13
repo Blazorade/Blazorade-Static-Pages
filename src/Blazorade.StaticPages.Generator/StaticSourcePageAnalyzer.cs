@@ -593,7 +593,7 @@ internal sealed class StaticSourcePageAnalyzer
         string? AuthorUrl,
         string? Image,
         string? Locale,
-        DateTimeOffset? Date,
+        DateTimeOffset? DatePublished,
         DateTimeOffset? DateModified,
         string? SchemaType,
         string? Keywords,
@@ -608,11 +608,11 @@ internal sealed class StaticSourcePageAnalyzer
                 : null;
 
             var title = Get("Title") ?? throw Error(owner, route, "StaticMetadata requires a compile-time constant Title.");
-            var dateText = Get("Date");
-            DateTimeOffset? date = null;
-            if (!string.IsNullOrWhiteSpace(dateText) && !StaticPageDateParser.TryParse(dateText, out date))
+            var datePublishedText = Get("DatePublished");
+            DateTimeOffset? datePublished = null;
+            if (!string.IsNullOrWhiteSpace(datePublishedText) && !StaticPageDateParser.TryParse(datePublishedText, out datePublished))
             {
-                Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata Date value '{dateText}' could not be parsed as a DateTimeOffset.");
+                Console.Error.WriteLine($"warning BLZ001: {owner.Path} ({route}): The StaticMetadata DatePublished value '{datePublishedText}' could not be parsed as a DateTimeOffset.");
             }
 
             var dateModifiedText = Get("DateModified");
@@ -635,7 +635,7 @@ internal sealed class StaticSourcePageAnalyzer
                 Get("AuthorUrl"),
                 Get("Image"),
                 Get("Locale"),
-                date,
+                datePublished,
                 dateModified,
                 schemaType,
                 Get("Keywords"),

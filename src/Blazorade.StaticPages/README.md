@@ -36,10 +36,10 @@ Add the `Blazorade.StaticPages` package to a Blazor WebAssembly application. Dec
 </StaticContent>
 ```
 
-The optional `Date` parameter accepts a value parseable as a `DateTimeOffset`:
+The optional `DatePublished` parameter accepts a value parseable as a `DateTimeOffset`:
 
 ```razor
-<StaticMetadata Title="Products" Date="2026-05-10T14:30:00+02:00" />
+<StaticMetadata Title="Products" DatePublished="2026-05-10T14:30:00+02:00" />
 
 <StaticContent>
   <h1>Products</h1>
@@ -53,11 +53,11 @@ The optional `DateModified` parameter accepts a value parseable as a `DateTimeOf
 ```razor
 <StaticMetadata
   Title="Products"
-  Date="2026-05-10T14:30:00+02:00"
+  DatePublished="2026-05-10T14:30:00+02:00"
   DateModified="2026-09-13T10:15:00+02:00" />
 ```
 
-When supplied, the modification date is emitted as `article:modified_time`, `dateModified` in Article JSON-LD, sitemap `<lastmod>`, and RSS Atom `<atom:updated>` metadata. Invalid values produce a build warning and are omitted. The original publication date remains in `Date` and RSS `pubDate`.
+When supplied, the modification date is emitted as `article:modified_time`, `dateModified` in Article JSON-LD, sitemap `<lastmod>`, and RSS Atom `<atom:updated>` metadata. Invalid values produce a build warning and are omitted. The original publication date remains in `DatePublished` and RSS `pubDate`.
 
 Set `SchemaType` to `WebPage` or `Article` to generate equivalent JSON-LD in live and static output. `SchemaType="Article"` also produces `og:type="article"`; other pages produce `og:type="website"`. Page and author entities receive stable, host-independent `@id` values based on their URL paths so structured-data consumers can identify the same entities across staging, production, and other hosting environments. The optional `AuthorUrl`, `Keywords`, and `CopyrightNotice` parameters populate the corresponding Schema.org properties. `CopyrightNotice` can contain the copyright year and holder:
 
@@ -134,60 +134,23 @@ The generator does not execute application code. Values that depend on services,
 
 ## Release notes
 
-### v1.0.0-rc.16
+### v1.0.0
 
+- The static-page generation contract has now stabilized after the preview and RC releases. The library provides a predictable build-time path from ordinary Blazor WebAssembly components to crawler-visible static HTML while preserving normal runtime interactivity.
+- The stable release consolidates the metadata, structured-data, sitemap, RSS, routing, configuration, and build-integration capabilities developed during the prerelease period into the first supported 1.0.0 API.
+
+### Release candidates
+
+- Added `<main>` and `<title>` elements when the application template or static content does not provide them.
+- Added JSON-LD structured-data generation for live and generated pages, including `WebPage` and `Article` schema types, authors, author URLs, keywords, copyright notices, and stable host-independent entity identifiers.
+- Added default-enabled RSS 2.0 feed generation with metadata, Atom self-link validation, RSS discovery links, absolute article links and image sources, Static Web Apps routing, and stale feed cleanup.
+- Added live metadata cleanup and `PageTitle` handling to prevent duplicate or stale metadata during client-side navigation.
+- Added host-independent JSON-LD identifiers so staging and production resolve to the same page and author entities.
+- Added compile-time Razor expression support for static metadata and content, including image URLs in generated HTML and RSS content.
+- Added Static Web Apps navigation fallback configuration, application-owned static 404 pages with preserved HTTP 404 responses, and opt-in `staticPages.noIndex` support.
+- Added `og:type="article"` for pages with `SchemaType="Article"`.
 - Added optional `StaticMetadata.DateModified` support for live and generated metadata, Article JSON-LD, sitemap `<lastmod>`, and RSS Atom `<atom:updated>` values.
-
-### v1.0.0-rc.15
-
-- RSS content now resolves relative article links and image sources to absolute URLs using each item's canonical URL.
-
-### v1.0.0-rc.14
-
-- Generated and live Open Graph metadata now uses `og:type="article"` for pages with `SchemaType="Article"`.
-
-### v1.0.0-rc.13
-
-- Added opt-in `staticPages.noIndex` support for staging and preview deployments.
-
-### v1.0.0-rc.12
-
-- Added opt-in Static Web Apps navigation fallback configuration, disabled by default.
-- Added support for application-owned static 404 pages with preserved HTTP 404 responses.
-
-### v1.0.0-rc.11
-
-- Fixed static generation of compile-time Razor expressions used in HTML attribute values, including image URLs in generated HTML and RSS content.
-
-### v1.0.0-rc.10
-
-- Made generated JSON-LD entity identifiers independent of the hosting environment so staging and production metadata resolve to the same page and author entities.
-
-### v1.0.0-rc.9
-
-- Added startup cleanup of statically generated metadata before live `StaticMetadata` rendering, preventing duplicate and conflicting metadata during application startup and client-side navigation.
-- Added stable, host-independent `@id` values to generated JSON-LD page and author entities.
-- Fixed live title rendering by using `PageTitle`, preventing stale duplicate `<title>` elements during client-side navigation.
-
-### v1.0.0-rc.6
-
-- Added JSON-LD structured-data generation for live and statically generated pages through `StaticMetadata`.
-- Added support for `WebPage` and `Article` schema types, including authors represented as Schema.org `Person` objects.
-- Added optional author URLs, keywords, and copyright notices to the generated JSON-LD.
-
-### v1.0.0-rc.3
-
-- Added default-enabled RSS 2.0 feed generation with opt-out configuration through `staticPages.rss.enabled`.
-- Added RSS metadata, Atom self-link validation support, Static Web Apps routing, and stale feed cleanup.
-- Generated HTML pages now advertise the RSS feed with an alternate RSS link when feed generation is enabled.
-
-### v1.0.0-rc.2
-
-- Generated pages now add a `<title>` element when the application's HTML template does not contain one.
-
-### v1.0.0-rc.1
-
-- Generated pages now receive a `<main>` element when neither the HTML template nor static content defines one.
+- Renamed `StaticMetadata.Date` to `DatePublished` as the finalized publication-date API for the stable release.
 
 ## Preview releases
 
