@@ -141,6 +141,8 @@ The generator does not execute application code. Values that depend on services,
 
 ### Release candidates
 
+Versions v1.0.0-rc.1 through v1.0.0-rc.16 matured the initial preview contract into a feature-complete foundation for the first stable release, adding metadata, structured data, RSS, routing, and build-integration capabilities.
+
 - Added `<main>` and `<title>` elements when the application template or static content does not provide them.
 - Added JSON-LD structured-data generation for live and generated pages, including `WebPage` and `Article` schema types, authors, author URLs, keywords, copyright notices, and stable host-independent entity identifiers.
 - Added default-enabled RSS 2.0 feed generation with metadata, Atom self-link validation, RSS discovery links, absolute article links and image sources, Static Web Apps routing, and stale feed cleanup.
